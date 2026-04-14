@@ -1,20 +1,21 @@
-﻿using Microsoft.Maui.Controls.Maps;
-using Microsoft.Maui.Maps;
+﻿using Mapsui.Tiling;
+using Mapsui.Extensions;
 
 namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
-
         public MainPage()
         {
             InitializeComponent();
 
-            var location = new Location(59.437, 24.7536); // Tallinn
-            var span = MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(5));
+            var map = new Mapsui.Map();
+            map.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
+            mapView.Map = map;
 
-            map.MoveToRegion(span);
+            // Fix applied here:
+            var (x, y) = Mapsui.Projections.SphericalMercator.FromLonLat(24.7536, 59.437);
+            mapView.Map.Navigator.CenterOnAndZoomTo(new Mapsui.MPoint(x, y), 5.0);
         }
     }
 }
