@@ -41,7 +41,7 @@ namespace Ilmas6ber
                     Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
                 },
                 SymbolScale = 0.2,
-                Enabled = false,
+                Enabled = true,
                 MinVisible = 0,
                 MaxVisible = double.MaxValue
             });
