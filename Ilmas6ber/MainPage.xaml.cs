@@ -35,7 +35,7 @@ namespace Ilmas6ber
             mapControl.Map?.Widgets.Add(new ZoomInOutWidget { Margin = new MRect(20, 40) });
             _coordinatesWidget = new TextBoxWidget
             {
-                Text = "Waiting for location...",
+                
                 HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom,
                 Margin = new MRect(100, 100),
