@@ -11,6 +11,7 @@ using Mapsui.Widgets.ButtonWidgets;
 using Mapsui.Widgets.InfoWidgets;
 using Mapsui.Widgets.ScaleBar;
 using System.Threading.Tasks;
+using Mapsui.Styles.Thematics;
 
 
 
@@ -34,22 +35,20 @@ namespace Ilmas6ber
 
             // Custom location feature
             _locationFeature = new PointFeature(new MPoint(0, 0));
-            _locationFeature.Styles.Add(new ImageStyle
+
+            var pinStyle = ImageStyles.CreatePinStyle();
+            pinStyle.Image = new Mapsui.Styles.Image
             {
-                Image = new Mapsui.Styles.Image
-                {
-                    Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
-                },
-                SymbolScale = 0.5,
-                MinVisible = double.MinValue,
-                MaxVisible = 20000,
-            });
+                Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
+            };
 
             _locationLayer = new MemoryLayer
             {
                 Name = "UserLocation",
                 Features = new[] { _locationFeature },
-                Style = null,
+                Style = pinStyle,
+                MinVisible = double.MinValue,
+                MaxVisible = double.MaxValue
             };
 
             mapControl.Map?.Layers.Add(_locationLayer);
@@ -75,6 +74,11 @@ namespace Ilmas6ber
             mapControl.Map?.Widgets.Add(_coordinatesWidget);
 
             Content = mapControl;
+
+            mapControl.Map.Navigator.ViewportChanged += (s, e) =>
+            {
+                Console.WriteLine($"Resolution: {mapControl.Map.Navigator.Viewport.Resolution}");
+            };
         }
 
 
@@ -116,7 +120,6 @@ namespace Ilmas6ber
 
             _lastLocation = location;
             Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}");
-            Console.WriteLine($"Resolution: {mapControl.Map.Navigator.Viewport.Resolution}");
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -142,17 +145,17 @@ namespace Ilmas6ber
             Geolocation.Default.StopListeningForeground();
             _isCheckingLocation = false;
         }
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();
             await StartLocationListening();
         }
+
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
             StopLocationListening();
         }
-
-
     }
 }
