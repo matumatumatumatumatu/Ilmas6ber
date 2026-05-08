@@ -14,6 +14,7 @@ namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
+        MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
         private Location _lastLocation;
@@ -21,7 +22,7 @@ namespace Ilmas6ber
         {
             InitializeComponent();
 
-            var mapControl = new Mapsui.UI.Maui.MapControl();
+            
             mapControl.Map?.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
             Content = mapControl;
             mapControl.Map?.Layers.Add(OpenStreetMap.CreateTileLayer());
