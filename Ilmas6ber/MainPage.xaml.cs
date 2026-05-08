@@ -117,8 +117,6 @@ namespace Ilmas6ber
             {
                 var point = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
 
-                // Recreate the feature to force the layer to recompute its bounding box,
-                // preventing Mapsui from culling the pin when the viewport moves
                 _locationFeature = new PointFeature(new MPoint(point.x, point.y));
                 _locationLayer.Features = new[] { _locationFeature };
                 _locationLayer.Style = _pinStyle;
@@ -146,6 +144,24 @@ namespace Ilmas6ber
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            var estoniaCenter = SphericalMercator.FromLonLat(25.0, 58.8);
+            mapControl.Map.Navigator.CenterOnAndZoomTo(
+                new MPoint(estoniaCenter.x, estoniaCenter.y),
+                resolution: 1000
+                
+            );
+
+            var swCorner = SphericalMercator.FromLonLat(20.0, 56.5);
+            var neCorner = SphericalMercator.FromLonLat(30.0, 61.5);
+            mapControl.Map.Navigator.OverridePanBounds = new MRect(
+                swCorner.x, swCorner.y,
+                neCorner.x, neCorner.y
+            );
+
+            // OverrideZoomBounds, NOT ZoomBounds (ZoomBounds is read-only)
+            mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(19.1, 4892);
+
             await StartLocationListening();
         }
 
