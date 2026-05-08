@@ -29,10 +29,8 @@ namespace Ilmas6ber
         {
             InitializeComponent();
 
-            
             mapControl.Map?.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
 
-            
             _locationFeature = new PointFeature(new MPoint(0, 0));
 
             _pinStyle = ImageStyles.CreatePinStyle();
@@ -40,6 +38,8 @@ namespace Ilmas6ber
             {
                 Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
             };
+            _pinStyle.SymbolScale = 1.0;
+            _pinStyle.Enabled = true;
 
             _locationLayer = new MemoryLayer
             {
@@ -52,7 +52,6 @@ namespace Ilmas6ber
 
             mapControl.Map?.Layers.Add(_locationLayer);
 
-            
             mapControl.Map?.Widgets.Add(new ScaleBarWidget(mapControl.Map)
             {
                 TextAlignment = Alignment.Center,
@@ -73,8 +72,6 @@ namespace Ilmas6ber
             mapControl.Map?.Widgets.Add(_coordinatesWidget);
 
             Content = mapControl;
-
-
         }
 
         public async Task StartLocationListening()
@@ -119,10 +116,15 @@ namespace Ilmas6ber
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 var point = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
-                _locationFeature.Point.X = point.x;
-                _locationFeature.Point.Y = point.y;
+
+                // Recreate the feature to force the layer to recompute its bounding box,
+                // preventing Mapsui from culling the pin when the viewport moves
+                _locationFeature = new PointFeature(new MPoint(point.x, point.y));
+                _locationLayer.Features = new[] { _locationFeature };
+                _locationLayer.Style = _pinStyle;
+
                 _locationLayer.DataHasChanged();
-                _coordinatesWidget.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
+                _coordinatesWidget.Text = $"Lat: {location.Latitude:F5}, Lon: {location.Longitude:F5}";
                 mapControl.Refresh();
             });
         }
