@@ -33,7 +33,15 @@ namespace Ilmas6ber
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Top
             });
             mapControl.Map?.Widgets.Add(new ZoomInOutWidget { Margin = new MRect(20, 40) });
-            _coordinatesWidget = new TextBoxWidget { Text = "" };
+            _coordinatesWidget = new TextBoxWidget
+            {
+                Text = "Waiting for location...",
+                HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
+                VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom,
+                Margin = new MRect(100, 100),
+                BackColor = Mapsui.Styles.Color.White,
+                TextColor = Mapsui.Styles.Color.Black,
+            };
             mapControl.Map?.Widgets.Add(_coordinatesWidget);
 
 
