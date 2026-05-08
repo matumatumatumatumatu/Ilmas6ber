@@ -12,6 +12,7 @@ using Mapsui.Widgets.InfoWidgets;
 using Mapsui.Widgets.ScaleBar;
 using System.Threading.Tasks;
 using Mapsui.Styles.Thematics;
+using Microsoft.Maui.Storage;
 
 namespace Ilmas6ber
 {
