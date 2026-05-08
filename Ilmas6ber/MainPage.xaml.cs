@@ -40,8 +40,9 @@ namespace Ilmas6ber
                 {
                     Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
                 },
-                SymbolScale = 1,
-                Enabled = false,
+                SymbolScale = 0.5,
+                MinVisible = double.MinValue,
+                MaxVisible = 20000,
             });
 
             _locationLayer = new MemoryLayer
@@ -84,7 +85,7 @@ namespace Ilmas6ber
                 _isCheckingLocation = true;
 
                 GeolocationListeningRequest request = new GeolocationListeningRequest(
-                    GeolocationAccuracy.Medium,
+                    GeolocationAccuracy.High,
                     TimeSpan.FromSeconds(10)
                 );
 
@@ -115,6 +116,7 @@ namespace Ilmas6ber
 
             _lastLocation = location;
             Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}");
+            Console.WriteLine($"Resolution: {mapControl.Map.Navigator.Viewport.Resolution}");
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
