@@ -24,6 +24,8 @@ namespace Ilmas6ber
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
         private Location _lastLocation;
+        private CancellationTokenSource _zoomCancellationToken;
+        private bool _areZoomButtonsExpanded = false;
 
         public MainPage()
         {
@@ -58,7 +60,7 @@ namespace Ilmas6ber
                 HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Center,
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Top
             });
-            mapControl.Map?.Widgets.Add(new ZoomInOutWidget { Margin = new MRect(20, 40) });
+            // Custom zoom buttons are now in XAML overlay
 
             _coordinatesWidget = new TextBoxWidget
             {
@@ -71,7 +73,13 @@ namespace Ilmas6ber
             };
             mapControl.Map?.Widgets.Add(_coordinatesWidget);
 
-            Content = mapControl;
+            // Add MapControl to the grid as the first child (behind the buttons)
+            MapGrid.Insert(0, mapControl);
+
+            // Add tap gesture recognizer to collapse buttons when clicking on the map
+            var tapGesture = new TapGestureRecognizer();
+            tapGesture.Tapped += (s, e) => CollapseZoomButtonsBottomRight();
+            mapControl.GestureRecognizers.Add(tapGesture);
         }
 
         public async Task StartLocationListening()
@@ -149,7 +157,6 @@ namespace Ilmas6ber
             mapControl.Map.Navigator.CenterOnAndZoomTo(
                 new MPoint(estoniaCenter.x, estoniaCenter.y),
                 resolution: 1000
-                
             );
 
             var swCorner = SphericalMercator.FromLonLat(20.0, 56.5);
@@ -160,7 +167,7 @@ namespace Ilmas6ber
             );
 
             // OverrideZoomBounds, NOT ZoomBounds (ZoomBounds is read-only)
-            mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(19.1, 4892);
+            mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(5, 2250);
 
             await StartLocationListening();
         }
@@ -169,6 +176,135 @@ namespace Ilmas6ber
         {
             base.OnDisappearing();
             StopLocationListening();
+        }
+
+
+        private void OnZoomButtonClickedBottomRight(object sender, EventArgs e)
+        {
+            // Show zoom buttons with smooth animation
+            if (!_areZoomButtonsExpanded)
+            {
+                ExpandZoomButtonsBottomRight();
+            }
+            else
+            {
+                CollapseZoomButtonsBottomRight();
+            }
+        }
+
+        private async void OnZoomInClicked(object sender, EventArgs e)
+        {
+            await SmoothZoomIn();
+        }
+
+        private async void OnZoomOutClicked(object sender, EventArgs e)
+        {
+            await SmoothZoomOut();
+        }
+
+        private void OnOverlayTappedBottomRight(object sender, TappedEventArgs e)
+        {
+            // Only collapse if the expanded buttons exist and we're clicking on them
+            if (_areZoomButtonsExpanded)
+            {
+                CollapseZoomButtonsBottomRight();
+            }
+        }
+
+        private async void ExpandZoomButtonsBottomRight()
+        {
+            _areZoomButtonsExpanded = true;
+            ZoomInButtonBottomRight.IsEnabled = true;
+            ZoomOutButtonBottomRight.IsEnabled = true;
+
+            // Animate the zoom buttons in with fade
+            await Task.WhenAll(
+                ZoomInButtonBottomRight.FadeTo(1, 200, Easing.CubicOut),
+                ZoomOutButtonBottomRight.FadeTo(1, 200, Easing.CubicOut)
+            );
+        }
+
+        private async void CollapseZoomButtonsBottomRight()
+        {
+            _areZoomButtonsExpanded = false;
+
+            // Animate the zoom buttons out with fade
+            await Task.WhenAll(
+                ZoomInButtonBottomRight.FadeTo(0, 200, Easing.CubicIn),
+                ZoomOutButtonBottomRight.FadeTo(0, 200, Easing.CubicIn)
+            );
+
+            ZoomInButtonBottomRight.IsEnabled = false;
+            ZoomOutButtonBottomRight.IsEnabled = false;
+        }
+
+        private async Task SmoothZoomIn()
+        {
+            _zoomCancellationToken?.Cancel();
+            _zoomCancellationToken = new CancellationTokenSource();
+
+            try
+            {
+                var currentResolution = mapControl.Map?.Navigator.Viewport.Resolution ?? 1;
+                var targetResolution = currentResolution / 2.0;
+                const int duration = 300;
+                const int steps = 30;
+                var stepDuration = duration / (double)steps;
+
+                for (int i = 0; i < steps; i++)
+                {
+                    if (_zoomCancellationToken.Token.IsCancellationRequested)
+                        return;
+
+                    var progress = (i + 1) / (double)steps;
+                    var easeProgress = EaseInOutCubic(progress);
+                    var newResolution = currentResolution - (currentResolution - targetResolution) * easeProgress;
+
+                    mapControl.Map?.Navigator.ZoomTo(newResolution);
+                    mapControl.Refresh();
+
+                    await Task.Delay((int)stepDuration, _zoomCancellationToken.Token);
+                }
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        private async Task SmoothZoomOut()
+        {
+            _zoomCancellationToken?.Cancel();
+            _zoomCancellationToken = new CancellationTokenSource();
+
+            try
+            {
+                var currentResolution = mapControl.Map?.Navigator.Viewport.Resolution ?? 1;
+                var targetResolution = currentResolution * 2.0;
+                const int duration = 300;
+                const int steps = 30;
+                var stepDuration = duration / (double)steps;
+
+                for (int i = 0; i < steps; i++)
+                {
+                    if (_zoomCancellationToken.Token.IsCancellationRequested)
+                        return;
+
+                    var progress = (i + 1) / (double)steps;
+                    var easeProgress = EaseInOutCubic(progress);
+                    var newResolution = currentResolution + (targetResolution - currentResolution) * easeProgress;
+
+                    mapControl.Map?.Navigator.ZoomTo(newResolution);
+                    mapControl.Refresh();
+
+                    await Task.Delay((int)stepDuration, _zoomCancellationToken.Token);
+                }
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        private static double EaseInOutCubic(double progress)
+        {
+            return progress < 0.5
+                ? 4 * progress * progress * progress
+                : 1 - Math.Pow(-2 * progress + 2, 3) / 2;
         }
     }
 }
