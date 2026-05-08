@@ -38,7 +38,7 @@ namespace Ilmas6ber
                     {
                         Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
                     },
-                    SymbolScale = 0.5
+                    SymbolScale = 0.2
                 }
             };
             mapControl.Map?.Layers.Add(_myLocationLayer);
@@ -110,7 +110,7 @@ namespace Ilmas6ber
             
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                _myLocationLayer.UpdateMyLocation(new MPoint(location.Longitude, location.Latitude));
+                _myLocationLayer.UpdateMyLocation(new MPoint(location.Latitude, location.Longitude));
                 _coordinatesWidget.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
                 mapControl.Refresh();
             });
