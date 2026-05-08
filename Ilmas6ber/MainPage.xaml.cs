@@ -40,14 +40,19 @@ namespace Ilmas6ber
                 {
                     Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
                 },
-                SymbolScale = 0.2
+                SymbolScale = 0.2,
+                Enabled = false,
+                MinVisible = 0,
+                MaxVisible = double.MaxValue
             });
 
             _locationLayer = new MemoryLayer
             {
                 Name = "UserLocation",
                 Features = new[] { _locationFeature },
-                Style = null
+                Style = null,
+                MinVisible = 0,
+                MaxVisible = double.MaxValue
             };
 
             mapControl.Map?.Layers.Add(_locationLayer);
