@@ -6,13 +6,17 @@ using Mapsui.Widgets.ScaleBar;
 using Mapsui.Widgets.ButtonWidgets;
 using System.Threading.Tasks;
 using Mapsui.Widgets.InfoWidgets;
+using Mapsui.Widgets.BoxWidgets;
+using Mapsui.UI.Maui;
 
 
 namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
-        bool _isCheckingLocation;
+        private TextBoxWidget _coordinatesWidget;
+        private bool _isCheckingLocation = false;
+        private Location _lastLocation;
         public MainPage()
         {
             InitializeComponent();
@@ -28,54 +32,79 @@ namespace Ilmas6ber
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Top
             });
             mapControl.Map?.Widgets.Add(new ZoomInOutWidget { Margin = new MRect(20, 40) });
-            var button = new ButtonWidget
-            {
-                Text = "Locate",
-                HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
-                VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Top,
-                Margin = new MRect(20, 100),
-            };
-            button.Tapped += (sender, args) =>
-            {
-                GetCurrentLocation();
-            };
-            mapControl.Map?.Widgets.Add(button);
+            _coordinatesWidget = new TextBoxWidget { Text = "" };
+            mapControl.Map?.Widgets.Add(_coordinatesWidget);
 
 
 
         }
-        public async Task GetCurrentLocation()
+
+
+        public async Task StartLocationListening()
         {
             try
             {
                 _isCheckingLocation = true;
 
-                GeolocationRequest request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
+                GeolocationListeningRequest request = new GeolocationListeningRequest(
+                    GeolocationAccuracy.Medium,
+                    TimeSpan.FromSeconds(10)  // Minimum interval between updates
+                );
 
-               CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
+                bool success = await Geolocation.Default.StartListeningForegroundAsync(request);
 
-                Location location = await Geolocation.Default.GetLocationAsync(request, _cancelTokenSource.Token);
-
-                if (location != null)
-                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+                if (success)
+                {
+                    Geolocation.Default.LocationChanged += OnLocationChanged;
+                    Geolocation.Default.ListeningFailed += OnListeningFailed;
+                }
             }
-            // Catch one of the following exceptions:
-            //   FeatureNotSupportedException
-            //   FeatureNotEnabledException
-            //   PermissionException
             catch (Exception ex)
             {
-                // Unable to get location
-            }
-            finally
-            {
+                Console.WriteLine($"Error starting location listening: {ex.Message}");
                 _isCheckingLocation = false;
             }
+        }
 
-        }
-        private async void OnGetLocationClicked(object sender, EventArgs e)
+        private void OnLocationChanged(object sender, GeolocationLocationChangedEventArgs e)
         {
-            await GetCurrentLocation();
+            var location = e.Location;
+
+            // Optional: skip if user hasn't moved meaningfully
+            if (_lastLocation != null)
+            {
+                double movedMeters = Location.CalculateDistance(_lastLocation, location, DistanceUnits.Kilometers) * 1000;
+                if (movedMeters < 10) return;
+            }
+
+            _lastLocation = location;
+            Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+
+            // Update your map here on the main thread
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    _coordinatesWidget.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
+                    mapControl.Refresh();
+                });
+            });
         }
+
+        private void OnListeningFailed(object sender, GeolocationListeningFailedEventArgs e)
+        {
+            Console.WriteLine($"Listening failed: {e.Error}");
+            _isCheckingLocation = false;
+        }
+
+        public void StopLocationListening()
+        {
+            Geolocation.Default.LocationChanged -= OnLocationChanged;
+            Geolocation.Default.ListeningFailed -= OnListeningFailed;
+            Geolocation.Default.StopListeningForeground();
+            _isCheckingLocation = false;
+        }
+
+
     }
 }
