@@ -8,12 +8,16 @@ using System.Threading.Tasks;
 using Mapsui.Widgets.InfoWidgets;
 using Mapsui.Widgets.BoxWidgets;
 using Mapsui.UI.Maui;
+using Mapsui.Layers;
+using Mapsui.Styles;
+
 
 
 namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
+        private MyLocationLayer _myLocationLayer;
         MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
@@ -22,10 +26,24 @@ namespace Ilmas6ber
         {
             InitializeComponent();
 
-            
+            // Tile layer (only once)
             mapControl.Map?.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
-            Content = mapControl;
-            mapControl.Map?.Layers.Add(OpenStreetMap.CreateTileLayer());
+
+            // Location layer with custom PNG
+            _myLocationLayer = new MyLocationLayer(mapControl.Map)
+            {
+                Style = new ImageStyle
+                {
+                    Image = new Mapsui.Styles.Image
+                    {
+                        Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
+                    },
+                    SymbolScale = 0.5
+                }
+            };
+            mapControl.Map?.Layers.Add(_myLocationLayer);
+
+            // Widgets
             mapControl.Map?.Widgets.Add(new ScaleBarWidget(mapControl.Map)
             {
                 TextAlignment = Alignment.Center,
@@ -33,9 +51,10 @@ namespace Ilmas6ber
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Top
             });
             mapControl.Map?.Widgets.Add(new ZoomInOutWidget { Margin = new MRect(20, 40) });
+
             _coordinatesWidget = new TextBoxWidget
             {
-                
+                Text = "Waiting for location...",
                 HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom,
                 Margin = new MRect(100, 100),
@@ -44,8 +63,7 @@ namespace Ilmas6ber
             };
             mapControl.Map?.Widgets.Add(_coordinatesWidget);
 
-
-
+            Content = mapControl;
         }
 
 
@@ -57,7 +75,7 @@ namespace Ilmas6ber
 
                 GeolocationListeningRequest request = new GeolocationListeningRequest(
                     GeolocationAccuracy.Medium,
-                    TimeSpan.FromSeconds(10)  // Minimum interval between updates
+                    TimeSpan.FromSeconds(10)
                 );
 
                 bool success = await Geolocation.Default.StartListeningForegroundAsync(request);
@@ -79,7 +97,7 @@ namespace Ilmas6ber
         {
             var location = e.Location;
 
-            // Optional: skip if user hasn't moved meaningfully
+            
             if (_lastLocation != null)
             {
                 double movedMeters = Location.CalculateDistance(_lastLocation, location, DistanceUnits.Kilometers) * 1000;
@@ -89,9 +107,10 @@ namespace Ilmas6ber
             _lastLocation = location;
             Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
 
-            // Update your map here on the main thread
+            
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                _myLocationLayer.UpdateMyLocation(new MPoint(location.Longitude, location.Latitude));
                 _coordinatesWidget.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
                 mapControl.Refresh();
             });
