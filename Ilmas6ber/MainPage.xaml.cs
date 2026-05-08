@@ -38,7 +38,7 @@ namespace Ilmas6ber
             {
                 Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
             };
-            _pinStyle.SymbolScale = 1.0;
+            _pinStyle.SymbolScale = 0.5;
             _pinStyle.Enabled = true;
 
             _locationLayer = new MemoryLayer
