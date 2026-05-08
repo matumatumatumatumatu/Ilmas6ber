@@ -1,15 +1,16 @@
 ﻿using Mapsui;
 using Mapsui.Extensions;
-using Mapsui.Tiling;
-using Mapsui.Widgets;
-using Mapsui.Widgets.ScaleBar;
-using Mapsui.Widgets.ButtonWidgets;
-using System.Threading.Tasks;
-using Mapsui.Widgets.InfoWidgets;
-using Mapsui.Widgets.BoxWidgets;
-using Mapsui.UI.Maui;
 using Mapsui.Layers;
+using Mapsui.Projections;
 using Mapsui.Styles;
+using Mapsui.Tiling;
+using Mapsui.UI.Maui;
+using Mapsui.Widgets;
+using Mapsui.Widgets.BoxWidgets;
+using Mapsui.Widgets.ButtonWidgets;
+using Mapsui.Widgets.InfoWidgets;
+using Mapsui.Widgets.ScaleBar;
+using System.Threading.Tasks;
 
 
 
@@ -17,31 +18,39 @@ namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
-        private MyLocationLayer _myLocationLayer;
+        private MemoryLayer _locationLayer;
+        private PointFeature _locationFeature;
         MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
         private Location _lastLocation;
+
         public MainPage()
         {
             InitializeComponent();
 
-            // Tile layer (only once)
+            // Tile layer
             mapControl.Map?.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
 
-            // Location layer with custom PNG
-            _myLocationLayer = new MyLocationLayer(mapControl.Map)
+            // Custom location feature
+            _locationFeature = new PointFeature(new MPoint(0, 0));
+            _locationFeature.Styles.Add(new ImageStyle
             {
-                Style = new ImageStyle
+                Image = new Mapsui.Styles.Image
                 {
-                    Image = new Mapsui.Styles.Image
-                    {
-                        Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
-                    },
-                    SymbolScale = 0.2
-                }
+                    Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
+                },
+                SymbolScale = 0.2
+            });
+
+            _locationLayer = new MemoryLayer
+            {
+                Name = "UserLocation",
+                Features = new[] { _locationFeature },
+                Style = null
             };
-            mapControl.Map?.Layers.Add(_myLocationLayer);
+
+            mapControl.Map?.Layers.Add(_locationLayer);
 
             // Widgets
             mapControl.Map?.Widgets.Add(new ScaleBarWidget(mapControl.Map)
@@ -97,7 +106,6 @@ namespace Ilmas6ber
         {
             var location = e.Location;
 
-            
             if (_lastLocation != null)
             {
                 double movedMeters = Location.CalculateDistance(_lastLocation, location, DistanceUnits.Kilometers) * 1000;
@@ -105,12 +113,14 @@ namespace Ilmas6ber
             }
 
             _lastLocation = location;
-            Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+            Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}");
 
-            
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                _myLocationLayer.UpdateMyLocation(new MPoint(location.Latitude, location.Longitude));
+                var point = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
+                _locationFeature.Point.X = point.x;
+                _locationFeature.Point.Y = point.y;
+                _locationLayer.DataHasChanged();
                 _coordinatesWidget.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
                 mapControl.Refresh();
             });
