@@ -13,14 +13,13 @@ using Mapsui.Widgets.ScaleBar;
 using System.Threading.Tasks;
 using Mapsui.Styles.Thematics;
 
-
-
 namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
         private MemoryLayer _locationLayer;
         private PointFeature _locationFeature;
+        private ImageStyle _pinStyle;
         MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
@@ -30,14 +29,14 @@ namespace Ilmas6ber
         {
             InitializeComponent();
 
-            // Tile layer
+            
             mapControl.Map?.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
 
-            // Custom location feature
+            
             _locationFeature = new PointFeature(new MPoint(0, 0));
 
-            var pinStyle = ImageStyles.CreatePinStyle();
-            pinStyle.Image = new Mapsui.Styles.Image
+            _pinStyle = ImageStyles.CreatePinStyle();
+            _pinStyle.Image = new Mapsui.Styles.Image
             {
                 Source = "embedded://Ilmas6ber.Resources.Images.locationpin.png"
             };
@@ -46,14 +45,14 @@ namespace Ilmas6ber
             {
                 Name = "UserLocation",
                 Features = new[] { _locationFeature },
-                Style = pinStyle,
+                Style = _pinStyle,
                 MinVisible = double.MinValue,
                 MaxVisible = double.MaxValue
             };
 
             mapControl.Map?.Layers.Add(_locationLayer);
 
-            // Widgets
+            
             mapControl.Map?.Widgets.Add(new ScaleBarWidget(mapControl.Map)
             {
                 TextAlignment = Alignment.Center,
@@ -75,12 +74,8 @@ namespace Ilmas6ber
 
             Content = mapControl;
 
-            mapControl.Map.Navigator.ViewportChanged += (s, e) =>
-            {
-                Console.WriteLine($"Resolution: {mapControl.Map.Navigator.Viewport.Resolution}");
-            };
-        }
 
+        }
 
         public async Task StartLocationListening()
         {
