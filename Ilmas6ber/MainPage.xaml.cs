@@ -92,11 +92,8 @@ namespace Ilmas6ber
             // Update your map here on the main thread
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    _coordinatesWidget.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
-                    mapControl.Refresh();
-                });
+                _coordinatesWidget.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
+                mapControl.Refresh();
             });
         }
 
@@ -112,6 +109,16 @@ namespace Ilmas6ber
             Geolocation.Default.ListeningFailed -= OnListeningFailed;
             Geolocation.Default.StopListeningForeground();
             _isCheckingLocation = false;
+        }
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await StartLocationListening();
+        }
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            StopLocationListening();
         }
 
 
