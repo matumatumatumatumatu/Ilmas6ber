@@ -13,11 +13,14 @@ using Mapsui.Widgets.ScaleBar;
 using System.Threading.Tasks;
 using Mapsui.Styles.Thematics;
 using Microsoft.Maui.Storage;
+using BruTile.Predefined;
+using Mapsui.Tiling.Layers;
 
 namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
+
         private MemoryLayer _locationLayer;
         private PointFeature _locationFeature;
         private ImageStyle _pinStyle;
@@ -199,6 +202,7 @@ namespace Ilmas6ber
             await Clipboard.SetTextAsync($"{lat:F5}, {lon:F5}");
         }
         //Klõpsamis funktsioonid END
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();
@@ -217,7 +221,7 @@ namespace Ilmas6ber
             );
 
             
-            mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(5, 2250);
+            mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(1, 2250);
 
             await StartLocationListening();
         }
