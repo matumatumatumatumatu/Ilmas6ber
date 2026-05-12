@@ -61,8 +61,8 @@ namespace Ilmas6ber
                 HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Center,
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Top
             });
-            // Custom zoom buttons are now in XAML overlay
-
+            
+            //Coordinates test textbox
             _coordinatesWidget = new TextBoxWidget
             {
                 Text = "Waiting for location...",
@@ -73,16 +73,16 @@ namespace Ilmas6ber
                 TextColor = Mapsui.Styles.Color.Black,
             };
             mapControl.Map?.Widgets.Add(_coordinatesWidget);
-
-            // Add MapControl to the grid as the first child (behind the buttons)
+            //Coordinates test textbox
+            
             MapGrid.Insert(0, mapControl);
 
-            // Add tap gesture recognizer to collapse buttons when clicking on the map
+            
             var tapGesture = new TapGestureRecognizer();
             tapGesture.Tapped += (s, e) => CollapseZoomButtonsBottomRight();
             mapControl.GestureRecognizers.Add(tapGesture);
         }
-
+        //Asukoha meetodid BEGIN
         public async Task StartLocationListening()
         {
             try
@@ -131,7 +131,7 @@ namespace Ilmas6ber
                 _locationLayer.Style = _pinStyle;
 
                 _locationLayer.DataHasChanged();
-                _coordinatesWidget.Text = $"Lat: {location.Latitude:F5}, Lon: {location.Longitude:F5}";
+                
                 mapControl.Refresh();
             });
         }
@@ -149,17 +149,17 @@ namespace Ilmas6ber
             Geolocation.Default.StopListeningForeground();
             _isCheckingLocation = false;
         }
-
+        //Asukoha meetodid END
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-
+            //Kaardi algus positsioon
             var estoniaCenter = SphericalMercator.FromLonLat(25.0, 58.8);
             mapControl.Map.Navigator.CenterOnAndZoomTo(
                 new MPoint(estoniaCenter.x, estoniaCenter.y),
                 resolution: 1000
             );
-
+            //Kaardi piirid
             var swCorner = SphericalMercator.FromLonLat(20.0, 56.5);
             var neCorner = SphericalMercator.FromLonLat(30.0, 61.5);
             mapControl.Map.Navigator.OverridePanBounds = new MRect(
@@ -167,12 +167,12 @@ namespace Ilmas6ber
                 neCorner.x, neCorner.y
             );
 
-            // OverrideZoomBounds, NOT ZoomBounds (ZoomBounds is read-only)
+            
             mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(5, 2250);
 
             await StartLocationListening();
         }
-
+        //Rakenduse sulgemine
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
@@ -182,7 +182,7 @@ namespace Ilmas6ber
 
         private void OnZoomButtonClickedBottomRight(object sender, EventArgs e)
         {
-            // Show zoom buttons with smooth animation
+            
             if (!_areZoomButtonsExpanded)
             {
                 ExpandZoomButtonsBottomRight();
@@ -205,7 +205,7 @@ namespace Ilmas6ber
 
         private void OnOverlayTappedBottomRight(object sender, TappedEventArgs e)
         {
-            // Only collapse if the expanded buttons exist and we're clicking on them
+            
             if (_areZoomButtonsExpanded)
             {
                 CollapseZoomButtonsBottomRight();
@@ -218,7 +218,7 @@ namespace Ilmas6ber
             ZoomInButtonBottomRight.IsEnabled = true;
             ZoomOutButtonBottomRight.IsEnabled = true;
 
-            // Animate the zoom buttons in with fade
+            
             await Task.WhenAll(
                 ZoomInButtonBottomRight.FadeTo(1, 200, Easing.CubicOut),
                 ZoomOutButtonBottomRight.FadeTo(1, 200, Easing.CubicOut)
@@ -229,7 +229,7 @@ namespace Ilmas6ber
         {
             _areZoomButtonsExpanded = false;
 
-            // Animate the zoom buttons out with fade
+            
             await Task.WhenAll(
                 ZoomInButtonBottomRight.FadeTo(0, 200, Easing.CubicIn),
                 ZoomOutButtonBottomRight.FadeTo(0, 200, Easing.CubicIn)
