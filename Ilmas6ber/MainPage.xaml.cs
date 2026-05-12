@@ -176,7 +176,7 @@ namespace Ilmas6ber
                     //    AddPinPoint(lon, lat);
                      //   break;
                     case "Open in navigation app":
-                        GetDirections(lon, lat);
+                        await GetDirections(lon, lat);
                         break;
                     case "Copy coordinates":
                         await CopyCoordinates(lon, lat);
@@ -190,7 +190,9 @@ namespace Ilmas6ber
         }
         private async Task GetDirections(double lon, double lat)
         {
-
+            var location = new Location(lat, lon);
+            var options = new MapLaunchOptions { Name = "Selected Location" };
+            await Microsoft.Maui.ApplicationModel.Map.OpenAsync(location, options);
         }
         private async Task CopyCoordinates(double lon, double lat)
         {
