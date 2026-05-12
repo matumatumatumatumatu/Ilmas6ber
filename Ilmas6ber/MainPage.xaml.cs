@@ -179,22 +179,22 @@ namespace Ilmas6ber
                         GetDirections(lon, lat);
                         break;
                     case "Copy coordinates":
-                        CopyCoordinates(lon, lat);
+                        await CopyCoordinates(lon, lat);
                         break;
                 }
             });
         }
-        private void AddPinPoint(double lon, double lat)
+        private async Task AddPinPoint(double lon, double lat)
         {
 
         }
-        private void GetDirections(double lon, double lat)
+        private async Task GetDirections(double lon, double lat)
         {
 
         }
-        private void CopyCoordinates(double lon, double lat)
+        private async Task CopyCoordinates(double lon, double lat)
         {
-
+            await Clipboard.SetTextAsync($"{lat:F5}, {lon:F5}");
         }
         //Klõpsamis funktsioonid END
         protected override async void OnAppearing()
