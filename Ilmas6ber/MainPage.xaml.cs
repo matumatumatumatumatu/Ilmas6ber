@@ -81,6 +81,7 @@ namespace Ilmas6ber
             var tapGesture = new TapGestureRecognizer();
             tapGesture.Tapped += (s, e) => CollapseZoomButtonsBottomRight();
             mapControl.GestureRecognizers.Add(tapGesture);
+            mapControl.MapTapped += ViewOptions;
         }
         //Asukoha meetodid BEGIN
         public async Task StartLocationListening()
@@ -120,7 +121,7 @@ namespace Ilmas6ber
             }
 
             _lastLocation = location;
-            Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}");
+            
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -150,6 +151,52 @@ namespace Ilmas6ber
             _isCheckingLocation = false;
         }
         //Asukoha meetodid END
+        //Klõpsamis funktsioonid BEGIN
+        private async void ViewOptions(object? sender, MapEventArgs e)
+        {
+            var worldPos = e.WorldPosition;
+            var (lon, lat) = SphericalMercator.ToLonLat(worldPos.X, worldPos.Y);
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                _coordinatesWidget.Text = $"Lat: {lat:F5}, Lon: {lon:F5}";
+
+                string action = await Application.Current.MainPage.DisplayActionSheet(
+                    $"Lat: {lat:F5}, Lon: {lon:F5}",
+                    "Cancel",
+                    null,
+                    //"Add point",
+                    "Open in navigation app",
+                    "Copy coordinates"
+                );
+
+                switch (action)
+                {
+                    //case "Add point":
+                    //    AddPinPoint(lon, lat);
+                     //   break;
+                    case "Open in navigation app":
+                        GetDirections(lon, lat);
+                        break;
+                    case "Copy coordinates":
+                        CopyCoordinates(lon, lat);
+                        break;
+                }
+            });
+        }
+        private void AddPinPoint(double lon, double lat)
+        {
+
+        }
+        private void GetDirections(double lon, double lat)
+        {
+
+        }
+        private void CopyCoordinates(double lon, double lat)
+        {
+
+        }
+        //Klõpsamis funktsioonid END
         protected override async void OnAppearing()
         {
             base.OnAppearing();
