@@ -18,69 +18,49 @@
                 <TapGestureRecognizer Tapped="OnOverlayTappedBottomRight" />
             </Grid.GestureRecognizers>
 
-            <!-- Zoom In Button (Top-Left) -->
             <Button x:Name="ZoomInButtonBottomRight" 
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Text="+"
-                    FontSize="24"
-                    FontAttributes="Bold"
-                    CornerRadius="8"
-                    Padding="12"
-                    BackgroundColor="#2c2d30"
-                    TextColor="White"
+                    Grid.Row="0" Grid.Column="0"
+                    Text="+" FontSize="24" FontAttributes="Bold"
+                    CornerRadius="8" Padding="12"
+                    BackgroundColor="#2c2d30" TextColor="White"
                     Clicked="OnZoomInClicked"
-                    WidthRequest="60"
-                    HeightRequest="60"
-                    Margin="0,0,8,8"
-                    Opacity="0"
-                    IsEnabled="False"/>
+                    WidthRequest="60" HeightRequest="60"
+                    Margin="0,0,8,8" Opacity="0" IsEnabled="False"/>
 
-            <!-- Zoom Out Button (Left) -->
             <Button x:Name="ZoomOutButtonBottomRight" 
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Text="−"
-                    FontSize="24"
-                    FontAttributes="Bold"
-                    CornerRadius="8"
-                    Padding="12"
-                    BackgroundColor="#2c2d30"
-                    TextColor="White"
+                    Grid.Row="1" Grid.Column="0"
+                    Text="−" FontSize="24" FontAttributes="Bold"
+                    CornerRadius="8" Padding="12"
+                    BackgroundColor="#2c2d30" TextColor="White"
                     Clicked="OnZoomOutClicked"
-                    WidthRequest="60"
-                    HeightRequest="60"
-                    Margin="0,8,8,0"
-                    Opacity="0"
-                    IsEnabled="False"/>
+                    WidthRequest="60" HeightRequest="60"
+                    Margin="0,8,8,0" Opacity="0" IsEnabled="False"/>
 
-            <!-- Main Zoom Button (Bottom-Right) -->
             <Button x:Name="ZoomButtonBottomRight" 
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Text="🔍"
-                    FontSize="24"
-                    CornerRadius="8"
-                    Padding="12"
-                    BackgroundColor="#2c2d30"
-                    TextColor="White"
+                    Grid.Row="1" Grid.Column="1"
+                    Text="🔍" FontSize="24"
+                    CornerRadius="8" Padding="12"
+                    BackgroundColor="#2c2d30" TextColor="White"
                     Clicked="OnZoomButtonClickedBottomRight"
-                    WidthRequest="60"
-                    HeightRequest="60"/>
-
-            <Button x:Name="ToggleMapLayer" 
-                    Grid.Row="10"
-                    Grid.Column="10"
-                    Text="🛰️"
-                    FontSize="24"
-                    CornerRadius="8"
-                    Padding="12"
-                    BackgroundColor="#2c2d30"
-                    TextColor="White"
-                    Clicked="OnToggleMapClicked"
-                    WidthRequest="40"
-                    HeightRequest="40"/>
+                    WidthRequest="60" HeightRequest="60"/>
         </Grid>
+
+        
+        <Button x:Name="ToggleMapLayer1"
+                Grid.Row="0" Grid.Column="0"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                Margin="0,50,16,0"
+                Text="🛰️"
+                FontSize="24"
+                CornerRadius="8"
+                Padding="12"
+                BackgroundColor="#2c2d30"
+                TextColor="White"
+                Clicked="OnToggleMapClicked"
+                WidthRequest="60"
+                HeightRequest="60"/>
+
     </Grid>
 
 </ContentPage>
