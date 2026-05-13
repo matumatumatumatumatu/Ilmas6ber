@@ -13,11 +13,6 @@ using Mapsui.Widgets.ScaleBar;
 using System.Threading.Tasks;
 using Mapsui.Styles.Thematics;
 using Microsoft.Maui.Storage;
-#if ANDROID
-using Android.Content;
-using Android.Locations;
-using Android.Provider;
-#endif
 
 namespace Ilmas6ber
 {
@@ -29,7 +24,7 @@ namespace Ilmas6ber
         MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
-        private Microsoft.Maui.Devices.Sensors.Location _lastLocation;
+        private Location _lastLocation;
         private CancellationTokenSource _zoomCancellationToken;
         private bool _areZoomButtonsExpanded = false;
 
@@ -88,14 +83,29 @@ namespace Ilmas6ber
             mapControl.GestureRecognizers.Add(tapGesture);
             mapControl.MapTapped += ViewOptions;
 
-            
-
 
 
         }
         //Asukoha meetodid BEGIN
         public async Task StartLocationListening()
         {
+            bool hasPermission = await EnsureLocationPermission();
+            if (!hasPermission)
+            {
+                // Gracefully UI update: user chose not to grant permission
+                return;
+            }
+
+            try
+            {
+                var location = await Geolocation.Default.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium));
+                // Process location data...
+            }
+            catch (PermissionException)
+            {
+                // Fallback catch block if permission state changes rapidly
+                await DisplayAlert("Error", "Location permission is required.", "OK");
+            }
             try
             {
                 _isCheckingLocation = true;
@@ -126,7 +136,7 @@ namespace Ilmas6ber
 
             if (_lastLocation != null)
             {
-                double movedMeters = Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(_lastLocation, location, DistanceUnits.Kilometers) * 1000;
+                double movedMeters = Location.CalculateDistance(_lastLocation, location, DistanceUnits.Kilometers) * 1000;
                 if (movedMeters < 10) return;
             }
 
@@ -200,7 +210,7 @@ namespace Ilmas6ber
         }
         private async Task GetDirections(double lon, double lat)
         {
-            var location = new Microsoft.Maui.Devices.Sensors.Location(lat, lon);
+            var location = new Location(lat, lon);
             var options = new MapLaunchOptions { Name = "Selected Location" };
             await Microsoft.Maui.ApplicationModel.Map.OpenAsync(location, options);
         }
@@ -228,21 +238,6 @@ namespace Ilmas6ber
 
             
             mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(5, 2250);
-
-#if ANDROID
-            var lm = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.GetSystemService(Context.LocationService) as LocationManager;
-            var isenabled = lm.IsProviderEnabled(LocationManager.GpsProvider);
-            // check if GPS is enabled
-            if (isenabled == false)
-            {
-                bool result = await DisplayAlertAsync("Tõrge!", "Meie rakendus vajab et asukoha luba, et töötada ettenähtult. Palun lubage asukoht", "Luba", "Ei luba");
-                if (result)
-                {
-                    Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.StartActivity(new Intent(Settings.ActionLocationSourceSettings));
-                }
-                //go to the android location settings page
-            }
-#endif
 
             await StartLocationListening();
         }
@@ -381,5 +376,35 @@ namespace Ilmas6ber
                 ? 4 * progress * progress * progress
                 : 1 - Math.Pow(-2 * progress + 2, 3) / 2;
         }
+        private async Task<bool> EnsureLocationPermission()
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+
+            // 1. If already granted, proceed
+            if (status == PermissionStatus.Granted)
+                return true;
+
+            // 2. If denied previously, the system prompt will not show up again.
+            // We must explain the issue and send them to the device settings page.
+            if (status == PermissionStatus.Denied)
+            {
+                bool openSettings = await DisplayAlert(
+                    "Permission Required",
+                    "Location access was denied. Please enable it in the app settings to use this feature.",
+                    "Go to Settings",
+                    "Cancel");
+
+                if (openSettings)
+                {
+                    AppInfo.Current.ShowSettingsUI();
+                }
+                return false;
+            }
+
+            // 3. First-time request or Restrictive state (e.g., iOS "Ask Next Time")
+            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            return status == PermissionStatus.Granted;
+        }
+
     }
 }
