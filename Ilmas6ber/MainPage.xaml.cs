@@ -85,6 +85,9 @@ namespace Ilmas6ber
             tapGesture.Tapped += (s, e) => CollapseZoomButtonsBottomRight();
             mapControl.GestureRecognizers.Add(tapGesture);
             mapControl.MapTapped += ViewOptions;
+
+
+
         }
         //Asukoha meetodid BEGIN
         public async Task StartLocationListening()
@@ -110,6 +113,7 @@ namespace Ilmas6ber
             {
                 Console.WriteLine($"Error starting location listening: {ex.Message}");
                 _isCheckingLocation = false;
+                await EnsureLocationPermission();
             }
         }
 
@@ -223,6 +227,11 @@ namespace Ilmas6ber
             
             mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(1, 2250);
 
+            if (Window != null)
+            {
+                Window.Activated += OnWindowActivated;
+            }
+
             await StartLocationListening();
         }
         //Rakenduse sulgemine
@@ -230,6 +239,11 @@ namespace Ilmas6ber
         {
             base.OnDisappearing();
             StopLocationListening();
+
+            if (Window != null)
+            {
+                Window.Activated -= OnWindowActivated;
+            }
         }
 
 
@@ -360,5 +374,69 @@ namespace Ilmas6ber
                 ? 4 * progress * progress * progress
                 : 1 - Math.Pow(-2 * progress + 2, 3) / 2;
         }
+        private async Task<bool> EnsureLocationPermission()
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+
+            // 1. If already granted, proceed
+            if (status == PermissionStatus.Granted)
+            {
+                
+                return true;
+            }
+
+            // 2. If denied previously, the system prompt will not show up again.
+            // We must explain the issue and send them to the device settings page.
+            if (status == PermissionStatus.Denied)
+            {
+                bool openSettings = await DisplayAlert(
+                    "Permission Required",
+                    "Location access was denied. Please enable it in the app settings to use this feature.",
+                    "Go to Settings",
+                    "Cancel");
+
+                if (openSettings)
+                {
+                    AppInfo.Current.ShowSettingsUI();
+                    
+                }
+                return false;
+            }
+
+            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            return status == PermissionStatus.Granted;
+
+        }
+        private async void OnWindowActivated(object sender, EventArgs e)
+        {
+            // Explicitly check permissions silently without re-triggering endless prompt loops
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+
+            if (status == PermissionStatus.Granted)
+            {
+                // The user just granted permission in settings and came back
+                await FetchDeviceLocation();
+            }
+        }
+
+        private async Task FetchDeviceLocation()
+        {
+            try
+            {
+                var location = await Geolocation.Default.GetLocationAsync(
+                    new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)));
+
+                if (location != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}");
+                    StartLocationListening();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions like GPS hardware being turned off
+            }
+        }
+
     }
 }
