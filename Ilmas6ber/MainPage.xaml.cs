@@ -89,23 +89,6 @@ namespace Ilmas6ber
         //Asukoha meetodid BEGIN
         public async Task StartLocationListening()
         {
-            bool hasPermission = await EnsureLocationPermission();
-            if (!hasPermission)
-            {
-                // Gracefully UI update: user chose not to grant permission
-                return;
-            }
-
-            try
-            {
-                var location = await Geolocation.Default.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium));
-                // Process location data...
-            }
-            catch (PermissionException)
-            {
-                // Fallback catch block if permission state changes rapidly
-                await DisplayAlert("Error", "Location permission is required.", "OK");
-            }
             try
             {
                 _isCheckingLocation = true;
@@ -127,6 +110,7 @@ namespace Ilmas6ber
             {
                 Console.WriteLine($"Error starting location listening: {ex.Message}");
                 _isCheckingLocation = false;
+                await EnsureLocationPermission();
             }
         }
 
@@ -239,6 +223,11 @@ namespace Ilmas6ber
             
             mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(5, 2250);
 
+            if (Window != null)
+            {
+                Window.Activated += OnWindowActivated;
+            }
+
             await StartLocationListening();
         }
         //Rakenduse sulgemine
@@ -246,6 +235,11 @@ namespace Ilmas6ber
         {
             base.OnDisappearing();
             StopLocationListening();
+
+            if (Window != null)
+            {
+                Window.Activated -= OnWindowActivated;
+            }
         }
 
 
@@ -382,7 +376,10 @@ namespace Ilmas6ber
 
             // 1. If already granted, proceed
             if (status == PermissionStatus.Granted)
+            {
+                
                 return true;
+            }
 
             // 2. If denied previously, the system prompt will not show up again.
             // We must explain the issue and send them to the device settings page.
@@ -397,13 +394,44 @@ namespace Ilmas6ber
                 if (openSettings)
                 {
                     AppInfo.Current.ShowSettingsUI();
+                    
                 }
                 return false;
             }
 
-            // 3. First-time request or Restrictive state (e.g., iOS "Ask Next Time")
             status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             return status == PermissionStatus.Granted;
+
+        }
+        private async void OnWindowActivated(object sender, EventArgs e)
+        {
+            // Explicitly check permissions silently without re-triggering endless prompt loops
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+
+            if (status == PermissionStatus.Granted)
+            {
+                // The user just granted permission in settings and came back
+                await FetchDeviceLocation();
+            }
+        }
+
+        private async Task FetchDeviceLocation()
+        {
+            try
+            {
+                var location = await Geolocation.Default.GetLocationAsync(
+                    new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)));
+
+                if (location != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}");
+                    StartLocationListening();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions like GPS hardware being turned off
+            }
         }
 
     }
