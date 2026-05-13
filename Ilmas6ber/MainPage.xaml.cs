@@ -13,6 +13,11 @@ using Mapsui.Widgets.ScaleBar;
 using System.Threading.Tasks;
 using Mapsui.Styles.Thematics;
 using Microsoft.Maui.Storage;
+#if ANDROID
+using Android.Content;
+using Android.Locations;
+using Android.Provider;
+#endif
 
 namespace Ilmas6ber
 {
@@ -24,7 +29,7 @@ namespace Ilmas6ber
         MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
-        private Location _lastLocation;
+        private Microsoft.Maui.Devices.Sensors.Location _lastLocation;
         private CancellationTokenSource _zoomCancellationToken;
         private bool _areZoomButtonsExpanded = false;
 
@@ -82,6 +87,11 @@ namespace Ilmas6ber
             tapGesture.Tapped += (s, e) => CollapseZoomButtonsBottomRight();
             mapControl.GestureRecognizers.Add(tapGesture);
             mapControl.MapTapped += ViewOptions;
+
+            
+
+
+
         }
         //Asukoha meetodid BEGIN
         public async Task StartLocationListening()
@@ -116,7 +126,7 @@ namespace Ilmas6ber
 
             if (_lastLocation != null)
             {
-                double movedMeters = Location.CalculateDistance(_lastLocation, location, DistanceUnits.Kilometers) * 1000;
+                double movedMeters = Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(_lastLocation, location, DistanceUnits.Kilometers) * 1000;
                 if (movedMeters < 10) return;
             }
 
@@ -190,7 +200,7 @@ namespace Ilmas6ber
         }
         private async Task GetDirections(double lon, double lat)
         {
-            var location = new Location(lat, lon);
+            var location = new Microsoft.Maui.Devices.Sensors.Location(lat, lon);
             var options = new MapLaunchOptions { Name = "Selected Location" };
             await Microsoft.Maui.ApplicationModel.Map.OpenAsync(location, options);
         }
@@ -218,6 +228,21 @@ namespace Ilmas6ber
 
             
             mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(5, 2250);
+
+#if ANDROID
+            var lm = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.GetSystemService(Context.LocationService) as LocationManager;
+            var isenabled = lm.IsProviderEnabled(LocationManager.GpsProvider);
+            // check if GPS is enabled
+            if (isenabled == false)
+            {
+                bool result = await DisplayAlertAsync("Tõrge!", "Meie rakendus vajab et asukoha luba, et töötada ettenähtult. Palun lubage asukoht", "Luba", "Ei luba");
+                if (result)
+                {
+                    Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.StartActivity(new Intent(Settings.ActionLocationSourceSettings));
+                }
+                //go to the android location settings page
+            }
+#endif
 
             await StartLocationListening();
         }
