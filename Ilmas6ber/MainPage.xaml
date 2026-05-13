@@ -67,6 +67,19 @@
                     Clicked="OnZoomButtonClickedBottomRight"
                     WidthRequest="60"
                     HeightRequest="60"/>
+
+            <Button x:Name="ToggleMapLayer" 
+                    Grid.Row="10"
+                    Grid.Column="10"
+                    Text="🛰️"
+                    FontSize="24"
+                    CornerRadius="8"
+                    Padding="12"
+                    BackgroundColor="#2c2d30"
+                    TextColor="White"
+                    Clicked="OnToggleMapClicked"
+                    WidthRequest="40"
+                    HeightRequest="40"/>
         </Grid>
     </Grid>
 

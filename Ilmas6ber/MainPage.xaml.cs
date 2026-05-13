@@ -15,15 +15,18 @@ using Mapsui.Styles.Thematics;
 using Microsoft.Maui.Storage;
 using BruTile.Predefined;
 using Mapsui.Tiling.Layers;
+using BruTile.Web;
 
 namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
-
+        private bool _isSatellite = false;
         private MemoryLayer _locationLayer;
         private PointFeature _locationFeature;
         private ImageStyle _pinStyle;
+        private ILayer? basicLayer;
+        private ILayer? satelliteLayer;
         MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
@@ -34,8 +37,17 @@ namespace Ilmas6ber
         public MainPage()
         {
             InitializeComponent();
+            //basic map source
+            basicLayer = Mapsui.Tiling.OpenStreetMap.CreateTileLayer();
+            mapControl.Map?.Layers.Add(basicLayer);
 
-            mapControl.Map?.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
+            //satellite map source
+            var tileSource = new HttpTileSource(
+                 new GlobalSphericalMercator(0, 19),
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                name: "Esri World Imagery"
+            );
+            satelliteLayer = new TileLayer(tileSource) { Name = "Satellite" };
 
             _locationFeature = new PointFeature(new MPoint(0, 0));
 
@@ -206,6 +218,28 @@ namespace Ilmas6ber
             await Clipboard.SetTextAsync($"{lat:F5}, {lon:F5}");
         }
         //Klõpsamis funktsioonid END
+
+        //Kaardi layerid BEGIN
+        private void ToggleMapLayer()
+        {
+            if (mapControl.Map == null) return;
+
+            _isSatellite = !_isSatellite;
+
+            var toRemove = _isSatellite ? basicLayer! : satelliteLayer!;
+            var toAdd = _isSatellite ? satelliteLayer! : basicLayer!;
+
+            mapControl.Map.Layers.Remove(toRemove);
+            mapControl.Map.Layers.Insert(0, toAdd);
+        }
+
+        private void OnToggleMapClicked(object sender, EventArgs e)
+        {
+            ToggleMapLayer();
+            var btn = (Button)sender;
+            btn.Text = _isSatellite ? "🌍" : "🛰️";
+        }
+        //Kaardi layerid END
 
         protected override async void OnAppearing()
         {
