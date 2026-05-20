@@ -68,12 +68,19 @@
 	  <MauiImage Remove="Resources\Images\dotnet_bot.png" />
 	  <MauiImage Remove="Resources\Images\locationpin.png" />
 	  <MauiImage Remove="Resources\Images\locationpin.svg" />
+	  <MauiImage Remove="Resources\Images\privatelocationpin.png" />
+	  <MauiImage Remove="Resources\Images\redteampin.png" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <EmbeddedResource Include="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 	  <EmbeddedResource Include="Resources\Images\locationpin.png" />
 	  <EmbeddedResource Include="Resources\Images\locationpin.svg" />
+	  <EmbeddedResource Include="Resources\Images\redteampin.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\Images\privatelocationpin.png" />
 	</ItemGroup>
 
 	<ItemGroup>

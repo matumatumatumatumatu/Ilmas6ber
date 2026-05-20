@@ -294,7 +294,7 @@ namespace Ilmas6ber
             {
                 Window.Activated += OnWindowActivated;
             }
-
+            Console.WriteLine(FileSystem.AppDataDirectory);
             await StartLocationListening();
         }
         //Rakenduse sulgemine
