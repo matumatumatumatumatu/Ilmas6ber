@@ -1,30 +1,36 @@
-﻿using Mapsui;
+﻿using BruTile.Predefined;
+using BruTile.Web;
+using Ilmas6ber.Services.Locations;
+using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.Projections;
 using Mapsui.Styles;
+using Mapsui.Styles.Thematics;
 using Mapsui.Tiling;
+using Mapsui.Tiling.Layers;
 using Mapsui.UI.Maui;
 using Mapsui.Widgets;
 using Mapsui.Widgets.BoxWidgets;
 using Mapsui.Widgets.ButtonWidgets;
 using Mapsui.Widgets.InfoWidgets;
 using Mapsui.Widgets.ScaleBar;
-using System.Threading.Tasks;
-using Mapsui.Styles.Thematics;
 using Microsoft.Maui.Storage;
-using BruTile.Predefined;
-using Mapsui.Tiling.Layers;
-using BruTile.Web;
+using System.Net.NetworkInformation;
+using System.Threading.Tasks;
+using static Google.Android.Material.Tabs.TabLayout;
 
 namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
+        private readonly PrivatePinXMLService _privatePinXMLService;
         private bool _isSatellite = false;
         private MemoryLayer _locationLayer;
+        private MemoryLayer _privatePinlayer;
         private PointFeature _locationFeature;
         private ImageStyle _pinStyle;
+        private ImageStyle _privatePinStyle;
         private ILayer? basicLayer;
         private ILayer? satelliteLayer;
         MapControl mapControl = new Mapsui.UI.Maui.MapControl();
@@ -51,6 +57,12 @@ namespace Ilmas6ber
 
             _locationFeature = new PointFeature(new MPoint(0, 0));
 
+            _privatePinStyle = ImageStyles.CreatePinStyle();
+            _privatePinStyle.Image = new Mapsui.Styles.Image
+            {
+                Source = "embedded://Ilmas6ber.Resources.Images.privatelocationpin.png"
+            };
+
             _pinStyle = ImageStyles.CreatePinStyle();
             _pinStyle.Image = new Mapsui.Styles.Image
             {
@@ -59,6 +71,22 @@ namespace Ilmas6ber
             _pinStyle.SymbolScale = 0.5;
             _pinStyle.Enabled = true;
 
+            var privatePins = _privatePinXMLService.Load();
+            _privatePinlayer = new MemoryLayer
+            {
+                Name="PrivatePin",
+                Features = privatePins.Select(p =>
+                {
+                    var (x, y) = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
+                    var feature = new PointFeature(x, y);
+                    feature["Id"] = p.Id.ToString();
+                    feature["Title"] = p.Title;
+                    return feature;
+                }).ToList(),
+                Style = _privatePinStyle,
+                MinVisible = double.MinValue,
+                MaxVisible = double.MaxValue,
+            };
             _locationLayer = new MemoryLayer
             {
                 Name = "UserLocation",
@@ -67,7 +95,7 @@ namespace Ilmas6ber
                 MinVisible = double.MinValue,
                 MaxVisible = double.MaxValue
             };
-
+            mapControl.Map?.Layers.Add(_privatePinlayer);
             mapControl.Map?.Layers.Add(_locationLayer);
 
             mapControl.Map?.Widgets.Add(new ScaleBarWidget(mapControl.Map)
