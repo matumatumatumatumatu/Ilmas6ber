@@ -26,8 +26,8 @@ namespace Ilmas6ber.Services.Locations
                         new XElement("Title", "Nice bench"),
                         new XElement("LocationType", "Bench"),
                         new XElement("Description", "Great view from here"),
-                        new XElement("Longitude", 59.12955763289114),
-                        new XElement("Latitude", 24.467395223296307),
+                        new XElement("Longitude", 24.467395223296307),
+                        new XElement("Latitude", 59.12955763289114),
                         new XElement("CreatedAt", DateTime.UtcNow.ToString("O")),
                         new XElement("ModifiedAt", DateTime.UtcNow.ToString("O")),
                         new XElement("LastVisited", ""),
@@ -35,7 +35,7 @@ namespace Ilmas6ber.Services.Locations
                     )
                 )
             );
-             
+            
             doc.Save(_filePath);
         }
 
