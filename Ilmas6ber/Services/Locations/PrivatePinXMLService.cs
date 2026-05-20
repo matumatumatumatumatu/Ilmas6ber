@@ -1,4 +1,5 @@
 ﻿using Ilmas6ber.Models.Locations;
+using System.Globalization;
 using System.Xml.Linq;
 using static Ilmas6ber.Models.Locations.PrivatePinEnumLocationType;
 
@@ -11,6 +12,31 @@ namespace Ilmas6ber.Services.Locations
         public PrivatePinXMLService()
         {
             _filePath = Path.Combine(FileSystem.AppDataDirectory, "privatePin.xml");
+            SeedIfEmpty();
+        }
+
+        private void SeedIfEmpty()
+        {
+            if (File.Exists(_filePath)) return;
+
+            var doc = new XDocument(
+                new XElement("PrivatePins",
+                    new XElement("PrivatePin",
+                        new XAttribute("Id", "a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                        new XElement("Title", "Nice bench"),
+                        new XElement("LocationType", "Bench"),
+                        new XElement("Description", "Great view from here"),
+                        new XElement("Longitude", 59.12955763289114),
+                        new XElement("Latitude", 24.467395223296307),
+                        new XElement("CreatedAt", DateTime.UtcNow.ToString("O")),
+                        new XElement("ModifiedAt", DateTime.UtcNow.ToString("O")),
+                        new XElement("LastVisited", ""),
+                        new XElement("ImagePath", "")
+                    )
+                )
+            );
+             
+            doc.Save(_filePath);
         }
 
         public List<PrivatePinModel> Load()
@@ -26,12 +52,12 @@ namespace Ilmas6ber.Services.Locations
                 Title = e.Element("Title")?.Value ?? string.Empty,
                 LocationType = Enum.Parse<LocationType>(e.Element("LocationType")!.Value),
                 Description = e.Element("Description")?.Value ?? string.Empty,
-                Longitude = double.Parse(e.Element("Longitude")!.Value),
-                Latitude = double.Parse(e.Element("Latitude")!.Value),
+                Longitude = double.Parse(e.Element("Longitude")!.Value, CultureInfo.InvariantCulture),
+                Latitude = double.Parse(e.Element("Latitude")!.Value, CultureInfo.InvariantCulture),
                 CreatedAt = DateTime.Parse(e.Element("CreatedAt")!.Value),
                 ModifiedAt = DateTime.Parse(e.Element("ModifiedAt")!.Value),
-                LastVisited = e.Element("LastVisited")?.Value is string lv ? DateTime.Parse(lv) : null,
-                ImagePath = e.Element("ImagePath")?.Value
+                LastVisited = e.Element("LastVisited")?.Value is string lv && lv != "" ? DateTime.Parse(lv) : null,
+                ImagePath = e.Element("ImagePath")?.Value is string ip && ip != "" ? ip : null
             }).ToList();
         }
 

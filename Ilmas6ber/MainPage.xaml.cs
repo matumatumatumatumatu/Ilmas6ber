@@ -18,7 +18,7 @@ using Mapsui.Widgets.ScaleBar;
 using Microsoft.Maui.Storage;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
-using static Google.Android.Material.Tabs.TabLayout;
+
 
 namespace Ilmas6ber
 {
@@ -40,8 +40,9 @@ namespace Ilmas6ber
         private CancellationTokenSource _zoomCancellationToken;
         private bool _areZoomButtonsExpanded = false;
 
-        public MainPage()
+        public MainPage(PrivatePinXMLService privatePinXMLService)
         {
+            _privatePinXMLService = privatePinXMLService;
             InitializeComponent();
             //basic map source
             basicLayer = Mapsui.Tiling.OpenStreetMap.CreateTileLayer();

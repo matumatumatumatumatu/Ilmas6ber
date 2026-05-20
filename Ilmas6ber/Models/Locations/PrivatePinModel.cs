@@ -11,7 +11,8 @@ namespace Ilmas6ber.Models.Locations
         public string Title { get; set; }
         public LocationType LocationType { get; set; }
         public string Description { get; set; }
-        public Mapsui.MPoint Coordinates { get; set; }
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
         public DateTime? LastVisited { get; set; }
