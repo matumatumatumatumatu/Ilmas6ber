@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ilmas6ber.Models.Accounts
 {
-    public class LoginViewModel
+    public class RegisterViewModel
     {
         [Required]
         [EmailAddress]
@@ -13,6 +13,12 @@ namespace Ilmas6ber.Models.Accounts
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
-        
+        [Display(Name = "Sisesta oma parool uuesti: ")]
+        [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "Paroolid ei kattu. Proovi uuesti.")]
+        public string ConfirmPassword { get; set; }
+        public string DisplayName { get; set; }
+
+
     }
 }
