@@ -84,4 +84,9 @@
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Models\Accounts\" />
+	  <Folder Include="Models\Locations\" />
+	</ItemGroup>
+
 </Project>
