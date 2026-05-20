@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using static Ilmas6ber.Models.Locations.PrivatePinEnumLocationType;
 
 namespace Ilmas6ber.Models.Locations
 {
@@ -8,6 +9,7 @@ namespace Ilmas6ber.Models.Locations
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Title { get; set; }
+        public LocationType LocationType { get; set; }
         public string Description { get; set; }
         public Mapsui.MPoint Coordinates { get; set; }
         public DateTime CreatedAt { get; set; }
