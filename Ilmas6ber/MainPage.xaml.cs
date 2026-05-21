@@ -63,6 +63,8 @@ namespace Ilmas6ber
             {
                 Source = "embedded://Ilmas6ber.Resources.Images.privatelocationpin.png"
             };
+            _privatePinStyle.SymbolScale = 0.4;
+            _privatePinStyle.Enabled = true;
 
             _pinStyle = ImageStyles.CreatePinStyle();
             _pinStyle.Image = new Mapsui.Styles.Image

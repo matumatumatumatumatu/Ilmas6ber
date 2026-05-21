@@ -15,6 +15,8 @@ namespace Ilmas6ber.Services.Locations
             SeedIfEmpty();
         }
 
+        //hardcoded private pin
+        //to delete later
         private void SeedIfEmpty()
         {
             if (File.Exists(_filePath)) return;
