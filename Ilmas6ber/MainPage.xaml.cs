@@ -26,6 +26,7 @@ namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
+        private readonly SatelliteMapCacheService _satelliteMapCacheService = new();
         private readonly MapCacheService _mapCacheService = new();
         private readonly PrivatePinXMLService _privatePinXMLService;
         private bool _isSatellite = false;
@@ -53,12 +54,10 @@ namespace Ilmas6ber
             basicLayer = _mapCacheService.CachedTileLayer;
 
             //satellite map source
-            var tileSource = new HttpTileSource(
-                 new GlobalSphericalMercator(0, 19),
-                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-                name: "Esri World Imagery"
-            );
-            satelliteLayer = new TileLayer(tileSource) { Name = "Satellite" };
+
+            mapControl.Map.Layers.Add(_satelliteMapCacheService.CachedTileLayer);
+            satelliteLayer = _satelliteMapCacheService.CachedTileLayer;
+            satelliteLayer.Enabled = false;
 
             _locationFeature = new PointFeature(new MPoint(0, 0));
 
@@ -266,11 +265,10 @@ namespace Ilmas6ber
 
             _isSatellite = !_isSatellite;
 
-            var toRemove = _isSatellite ? basicLayer! : satelliteLayer!;
-            var toAdd = _isSatellite ? satelliteLayer! : basicLayer!;
+            basicLayer!.Enabled = !_isSatellite;
+            satelliteLayer!.Enabled = _isSatellite;
 
-            mapControl.Map.Layers.Remove(toRemove);
-            mapControl.Map.Layers.Insert(0, toAdd);
+            mapControl.Map.RefreshData();
         }
 
         private void OnToggleMapClicked(object sender, EventArgs e)
