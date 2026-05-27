@@ -33,7 +33,7 @@ namespace Ilmas6ber
         private ImageStyle _privatePinStyle;
         private ILayer? basicLayer;
         private ILayer? satelliteLayer;
-        MapControl mapControl = new Mapsui.UI.Maui.MapControl();
+       public MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
         private Location _lastLocation;
