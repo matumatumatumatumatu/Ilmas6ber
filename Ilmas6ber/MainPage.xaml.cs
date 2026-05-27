@@ -47,13 +47,10 @@ namespace Ilmas6ber
         {
             _privatePinXMLService = privatePinXMLService;
             InitializeComponent();
-            
-            //cached map source
+
+            //layer
             mapControl.Map.Layers.Add(_mapCacheService.CachedTileLayer);
-            _mapCacheService.CachedTileLayer.Enabled = Connectivity.NetworkAccess != NetworkAccess.Internet;
-            //basic map source
-            basicLayer = Mapsui.Tiling.OpenStreetMap.CreateTileLayer();
-            mapControl.Map?.Layers.Add(basicLayer);
+            basicLayer = _mapCacheService.CachedTileLayer;
 
             //satellite map source
             var tileSource = new HttpTileSource(
@@ -260,11 +257,9 @@ namespace Ilmas6ber
         //Kaardi layerid BEGIN
         private void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
         {
-            bool isOffline = e.NetworkAccess != NetworkAccess.Internet;
-            _mapCacheService.CachedTileLayer.Enabled = isOffline;
             mapControl.Map.RefreshData();
         }
-        
+
         private void ToggleMapLayer()
         {
             if (mapControl.Map == null) return;

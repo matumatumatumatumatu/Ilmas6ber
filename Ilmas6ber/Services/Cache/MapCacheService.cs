@@ -7,6 +7,8 @@ namespace Ilmas6ber.Services.Cache
 {
     public class MapCacheService
     {
+        public HttpTileSource CachedTileSource { get; private set; }
+
         private readonly string cacheDirectory = Path.Combine(FileSystem.AppDataDirectory, "osm_cache");
         public TileLayer CachedTileLayer { get; private set; }
 
@@ -23,6 +25,7 @@ namespace Ilmas6ber.Services.Cache
                 name: "OSM",
                 persistentCache: fileCache);
 
+            CachedTileSource = tileSource;
             CachedTileLayer = new TileLayer(tileSource) { Name = "Cached OSM" };
         }
     }
