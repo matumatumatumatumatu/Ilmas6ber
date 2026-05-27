@@ -1,5 +1,6 @@
 ﻿using BruTile.Predefined;
 using BruTile.Web;
+using Ilmas6ber.Services.Cache;
 using Ilmas6ber.Services.Locations;
 using Mapsui;
 using Mapsui.Extensions;
@@ -24,6 +25,7 @@ namespace Ilmas6ber
 {
     public partial class MainPage : ContentPage
     {
+        private readonly MapCacheService _mapCacheService = new();
         private readonly PrivatePinXMLService _privatePinXMLService;
         private bool _isSatellite = false;
         private MemoryLayer _locationLayer;
@@ -44,6 +46,10 @@ namespace Ilmas6ber
         {
             _privatePinXMLService = privatePinXMLService;
             InitializeComponent();
+            
+            //cached map source
+            mapControl.Map.Layers.Add(_mapCacheService.CachedTileLayer);
+            _mapCacheService.CachedTileLayer.Enabled = Connectivity.NetworkAccess != NetworkAccess.Internet;
             //basic map source
             basicLayer = Mapsui.Tiling.OpenStreetMap.CreateTileLayer();
             mapControl.Map?.Layers.Add(basicLayer);
@@ -129,6 +135,7 @@ namespace Ilmas6ber
             mapControl.GestureRecognizers.Add(tapGesture);
             mapControl.MapTapped += ViewOptions;
 
+            Connectivity.ConnectivityChanged += OnConnectivityChanged;
 
 
         }
@@ -249,8 +256,14 @@ namespace Ilmas6ber
             await Clipboard.SetTextAsync($"{lat:F5}, {lon:F5}");
         }
         //Klõpsamis funktsioonid END
-
         //Kaardi layerid BEGIN
+        private void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
+        {
+            bool isOffline = e.NetworkAccess != NetworkAccess.Internet;
+            _mapCacheService.CachedTileLayer.Enabled = isOffline;
+            mapControl.Map.RefreshData();
+        }
+        
         private void ToggleMapLayer()
         {
             if (mapControl.Map == null) return;
