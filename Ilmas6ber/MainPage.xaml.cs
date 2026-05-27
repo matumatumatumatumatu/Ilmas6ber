@@ -19,6 +19,7 @@ using Mapsui.Widgets.ScaleBar;
 using Microsoft.Maui.Storage;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+using MySqlConnector;
 
 
 namespace Ilmas6ber
@@ -514,6 +515,24 @@ namespace Ilmas6ber
             {
                 // Handle exceptions like GPS hardware being turned off
             }
+        }
+
+        public async Task<List<string>> GetDataAsync()
+        {
+            var results = new List<string>();
+
+            await using var conn = new MySqlConnection(Environment.ConnectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new MySqlCommand("SELECT name FROM my_table", conn);
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                results.Add(reader.GetString(0));
+            }
+
+            return results;
         }
 
     }
