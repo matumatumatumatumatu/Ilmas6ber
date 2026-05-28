@@ -35,7 +35,8 @@ namespace Ilmas6ber.Services.Locations
                         new XElement("CreatedAt", DateTime.UtcNow.ToString("O")),
                         new XElement("ModifiedAt", DateTime.UtcNow.ToString("O")),
                         new XElement("LastVisited", ""),
-                        new XElement("ImagePath", "")
+                        new XElement("ImagePath", ""),
+                        new XElement("Elevation","")
                     )
                 )
             );
@@ -115,6 +116,20 @@ namespace Ilmas6ber.Services.Locations
             var idx = list.FindIndex(p => p.Id == updated.Id);
             if (idx >= 0) list[idx] = updated;
             Save(list);
+        }
+        //temporary Task for testing elevation api without frontend
+        public async Task BackfillElevationsAsync()
+        {
+            var list = Load();
+            bool changed = false;
+
+            foreach (var pin in list.Where(p => p.Elevation == null))
+            {
+                pin.Elevation = await _elevationService.GetElevation(pin.Latitude, pin.Longitude);
+                changed = true;
+            }
+
+            if (changed) Save(list);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BruTile.Predefined;
+﻿
+using BruTile.Predefined;
 using BruTile.Web;
 using Ilmas6ber.Services.Cache;
 using Ilmas6ber.Services.Locations;
@@ -17,9 +18,9 @@ using Mapsui.Widgets.ButtonWidgets;
 using Mapsui.Widgets.InfoWidgets;
 using Mapsui.Widgets.ScaleBar;
 using Microsoft.Maui.Storage;
+using MySqlConnector;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
-using MySqlConnector;
 
 
 namespace Ilmas6ber
@@ -44,10 +45,12 @@ namespace Ilmas6ber
         private CancellationTokenSource _zoomCancellationToken;
         private bool _areZoomButtonsExpanded = false;
 
+
         public MainPage(PrivatePinXMLService privatePinXMLService)
         {
             _privatePinXMLService = privatePinXMLService;
             InitializeComponent();
+
 
             //layer
             mapControl.Map.Layers.Add(_mapCacheService.CachedTileLayer);
@@ -305,6 +308,7 @@ namespace Ilmas6ber
             }
 
             await StartLocationListening();
+            await _privatePinXMLService.BackfillElevationsAsync();
         }
         //Rakenduse sulgemine
         protected override void OnDisappearing()
