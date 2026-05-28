@@ -8,10 +8,12 @@ namespace Ilmas6ber.Services.Locations
     public class PrivatePinXMLService
     {
         private readonly string _filePath;
+        private readonly ElevationService _elevationService;
 
         public PrivatePinXMLService()
         {
             _filePath = Path.Combine(FileSystem.AppDataDirectory, "privatePin.xml");
+            _elevationService = new ElevationService();
             SeedIfEmpty();
         }
 
@@ -59,7 +61,8 @@ namespace Ilmas6ber.Services.Locations
                 CreatedAt = DateTime.Parse(e.Element("CreatedAt")!.Value),
                 ModifiedAt = DateTime.Parse(e.Element("ModifiedAt")!.Value),
                 LastVisited = e.Element("LastVisited")?.Value is string lv && lv != "" ? DateTime.Parse(lv) : null,
-                ImagePath = e.Element("ImagePath")?.Value is string ip && ip != "" ? ip : null
+                ImagePath = e.Element("ImagePath")?.Value is string ip && ip != "" ? ip : null,
+                Elevation = e.Element("Elevation")?.Value is string el && el != ""?double.Parse(el, CultureInfo.InvariantCulture) : null
             }).ToList();
         }
 
@@ -78,7 +81,8 @@ namespace Ilmas6ber.Services.Locations
                             new XElement("CreatedAt", p.CreatedAt.ToString("O")),
                             new XElement("ModifiedAt", p.ModifiedAt.ToString("O")),
                             new XElement("LastVisited", p.LastVisited?.ToString("O")),
-                            new XElement("ImagePath", p.ImagePath)
+                            new XElement("ImagePath", p.ImagePath),
+                            new XElement("Elevation", p.Elevation?.ToString(CultureInfo.InvariantCulture) ?? "")
                         )
                     )
                 )
@@ -87,8 +91,11 @@ namespace Ilmas6ber.Services.Locations
             doc.Save(_filePath);
         }
 
-        public void Add(PrivatePinModel pin)
+        public async Task Add(PrivatePinModel pin)
         {
+            pin.Elevation = await _elevationService.GetElevation(pin.Latitude, pin.Longitude);
+            pin.CreatedAt = DateTime.UtcNow;
+            pin.ModifiedAt = DateTime.UtcNow;
             var list = Load();
             list.Add(pin);
             Save(list);
