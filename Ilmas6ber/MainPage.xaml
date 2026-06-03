@@ -43,6 +43,22 @@
                     BackgroundColor="#2c2d30" TextColor="White"
                     Clicked="OnZoomButtonClickedBottomRight"
                     WidthRequest="60" HeightRequest="60"/>
+
+            <Button x:Name="FilterButton" 
+                    Grid.Row="0" Grid.Column="0"
+                    HorizontalOptions="End"
+                    VerticalOptions="Start"
+                    Margin="0,120,16,0"
+                    Text="🔽"
+                    FontSize="24"
+                    CornerRadius="8"
+                    Padding="12"
+                    BackgroundColor="#2c2d30"
+                    TextColor="White"
+                    Clicked="OnFilterButtonClicked"
+                    WidthRequest="60"
+                    HeightRequest="60"/>
+
         </Grid>
 
         

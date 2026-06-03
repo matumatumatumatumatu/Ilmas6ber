@@ -1,6 +1,7 @@
 ﻿
 using BruTile.Predefined;
 using BruTile.Web;
+using Ilmas6ber.Models.Locations;
 using Ilmas6ber.Services.Cache;
 using Ilmas6ber.Services.Locations;
 using Mapsui;
@@ -21,6 +22,7 @@ using Microsoft.Maui.Storage;
 using MySqlConnector;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+using static Ilmas6ber.Models.Locations.PrivatePinEnumLocationType;
 
 
 namespace Ilmas6ber
@@ -44,6 +46,8 @@ namespace Ilmas6ber
         private Location _lastLocation;
         private CancellationTokenSource _zoomCancellationToken;
         private bool _areZoomButtonsExpanded = false;
+        private List<PrivatePinModel> _allPrivatePins;
+        private HashSet<LocationType> _selectedLocationTypes = new(Enum.GetValues(typeof(LocationType)).Cast<LocationType>());
 
 
         public MainPage(PrivatePinXMLService privatePinXMLService)
@@ -80,16 +84,17 @@ namespace Ilmas6ber
             _pinStyle.SymbolScale = 0.5;
             _pinStyle.Enabled = true;
 
-            var privatePins = _privatePinXMLService.Load();
+            _allPrivatePins = _privatePinXMLService.Load();
             _privatePinlayer = new MemoryLayer
             {
                 Name="PrivatePin",
-                Features = privatePins.Select(p =>
+                Features = _allPrivatePins.Select(p =>
                 {
                     var (x, y) = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
                     var feature = new PointFeature(x, y);
                     feature["Id"] = p.Id.ToString();
                     feature["Title"] = p.Title;
+                    feature["LocationType"] = p.LocationType;
                     return feature;
                 }).ToList(),
                 Style = _privatePinStyle,
@@ -532,5 +537,80 @@ namespace Ilmas6ber
             return results;
         }
 
-    }
+        private async void OnFilterButtonClicked(object sender, EventArgs e)
+        {
+            await ShowFilterMenu();
+        }
+
+        private async Task ShowFilterMenu()
+        {
+            var locationTypes = Enum.GetValues(typeof(LocationType)).Cast<LocationType>().ToList();
+            var actions = new List<string>();
+
+            foreach (var type in locationTypes)
+            {
+                var typeString = type.ToString().Replace("_", " ");
+                var isSelected = _selectedLocationTypes.Contains(type);
+                var checkbox = isSelected ? "✓ " : "☐ ";
+                actions.Add(checkbox + typeString);
+            }
+
+            actions.Add("Apply Filters");
+
+            string action = await Application.Current.MainPage.DisplayActionSheet(
+                "Filter Pins by Type",
+                "Cancel",
+                null,
+                actions.ToArray()
+            );
+
+            if (action == null || action == "Cancel")
+                return;
+
+            if (action == "Apply Filters")
+            {
+                ApplyFilters();
+                return;
+            }
+
+            // Toggle the selected type
+            var selectedIndex = actions.IndexOf(action);
+            if (selectedIndex >= 0 && selectedIndex < locationTypes.Count)
+            {
+                var selectedType = locationTypes[selectedIndex];
+                if (_selectedLocationTypes.Contains(selectedType))
+                {
+                    _selectedLocationTypes.Remove(selectedType);
+                }
+                else
+                {
+                    _selectedLocationTypes.Add(selectedType);
+                }
+
+                // Show the menu again to allow multiple selections
+                await ShowFilterMenu();
+            }
+        }
+
+        private void ApplyFilters()
+        {
+            var filteredPins = _allPrivatePins
+                .Where(p => _selectedLocationTypes.Contains(p.LocationType))
+                .ToList();
+
+            _privatePinlayer.Features = filteredPins.Select(p =>
+            {
+                var (x, y) = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
+                var feature = new PointFeature(x, y);
+                feature["Id"] = p.Id.ToString();
+                feature["Title"] = p.Title;
+                feature["LocationType"] = p.LocationType;
+                return feature;
+            }).ToList();
+
+            _privatePinlayer.DataHasChanged();
+            mapControl.Refresh();
+        }
+
+     }
 }
