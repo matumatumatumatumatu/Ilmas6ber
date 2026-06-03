@@ -313,10 +313,11 @@ namespace Ilmas6ber
                 Window.Activated += OnWindowActivated;
             }
             ApplicationUser player = new ApplicationUser();
-
+            xpToLevel(player);
             await StartLocationListening();
             await _privatePinXMLService.BackfillElevationsAsync();
             Console.WriteLine($"Player XP: {player.xpPoints}");
+            Console.WriteLine($"Player Level: {player.xpLevel}");
         }
         //Rakenduse sulgemine
         protected override void OnDisappearing()
@@ -613,6 +614,34 @@ namespace Ilmas6ber
 
             _privatePinlayer.DataHasChanged();
             mapControl.Refresh();
+        }
+
+        private void xpToLevel(ApplicationUser player)
+        {
+            if (player.xpPoints < 200)
+            {
+                player.xpLevel = 1;
+            }
+            else if (player.xpPoints < 400)
+            {
+                player.xpLevel = 2;
+            }
+            else if (player.xpPoints < 600)
+            {
+                player.xpLevel = 3;
+            }
+            else if (player.xpPoints < 800)
+            {
+                player.xpLevel = 4;
+            }
+            else if (player.xpPoints < 1000)
+            {
+                player.xpLevel = 5;
+            }
+            else
+            {
+                player.xpLevel = 6; // For 1000+ XP
+            }
         }
 
      }
