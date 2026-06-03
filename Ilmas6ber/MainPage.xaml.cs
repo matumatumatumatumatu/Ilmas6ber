@@ -1,6 +1,7 @@
 ﻿
 using BruTile.Predefined;
 using BruTile.Web;
+using Ilmas6ber.Domain;
 using Ilmas6ber.Models.Locations;
 using Ilmas6ber.Services.Cache;
 using Ilmas6ber.Services.Locations;
@@ -311,9 +312,11 @@ namespace Ilmas6ber
             {
                 Window.Activated += OnWindowActivated;
             }
+            ApplicationUser player = new ApplicationUser();
 
             await StartLocationListening();
             await _privatePinXMLService.BackfillElevationsAsync();
+            Console.WriteLine($"Player XP: {player.xpPoints}");
         }
         //Rakenduse sulgemine
         protected override void OnDisappearing()

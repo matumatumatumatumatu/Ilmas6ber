@@ -5,7 +5,7 @@
 
     <Grid x:Name="MapGrid" RowDefinitions="*" ColumnDefinitions="*">
 
-        <!-- Bottom-Right Zoom Button Overlay -->
+        
         <Grid x:Name="ZoomButtonOverlayBottomRight" 
               Grid.Row="0"
               Grid.Column="0"
