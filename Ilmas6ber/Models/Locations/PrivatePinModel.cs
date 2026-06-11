@@ -18,5 +18,6 @@ namespace Ilmas6ber.Models.Locations
         public DateTime? LastVisited { get; set; }
         public string? ImagePath { get; set; }
         public double? Elevation { get; set; }
+        public bool? IsPrivate { get; set; } = false;
     }
 }
