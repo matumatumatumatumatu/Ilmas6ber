@@ -559,7 +559,7 @@ namespace Ilmas6ber
         }
         public async void DropDownProfileClicked(object sender, EventArgs e)
         {
-            //Card #25
+            await Shell.Current.GoToAsync("ProfilePage");
         }
 
         public async void DropDownPrivateClicked(object sender, EventArgs e)
