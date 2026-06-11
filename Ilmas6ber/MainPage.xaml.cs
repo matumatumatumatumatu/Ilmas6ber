@@ -253,14 +253,38 @@ namespace Ilmas6ber
         }
         private async Task AddPinPoint(double lon, double lat)
         {
+            string title = await DisplayPromptAsync("New Pin", "Enter a title:", placeholder: "My Pin");
+            if (title == null) return;
+
+            var locationTypes = Enum.GetValues(typeof(LocationType)).Cast<LocationType>().Select(t => t.ToString()).ToArray();
+            string locationTypeStr = await DisplayActionSheet("Select Location Type", "Cancel", null, locationTypes);
+            if (locationTypeStr == null || locationTypeStr == "Cancel") return;
+
+            string description = await DisplayPromptAsync("New Pin", "Enter a description:", placeholder: "Optional");
+
             var pin = new PrivatePinModel
             {
                 Longitude = lon,
                 Latitude = lat,
-                LocationType = LocationType.Bench
+                Title = title,
+                LocationType = Enum.Parse<LocationType>(locationTypeStr),
+                Description = description ?? string.Empty,
             };
 
             await _privatePinXMLService.Add(pin);
+
+            _allPrivatePins = _privatePinXMLService.Load();
+            _privatePinlayer.Features = _allPrivatePins.Select(p =>
+            {
+                var (x, y) = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
+                var feature = new PointFeature(x, y);
+                feature["Id"] = p.Id.ToString();
+                feature["Title"] = p.Title;
+                feature["LocationType"] = p.LocationType;
+                return feature;
+            }).ToList();
+            _privatePinlayer.DataHasChanged();
+            mapControl.Refresh();
         }
         private async Task GetDirections(double lon, double lat)
         {
@@ -328,14 +352,6 @@ namespace Ilmas6ber
             await StartLocationListening();
             await _privatePinXMLService.BackfillElevationsAsync();
 
-            // TEMP TEST - remove after confirming
-            var testPin = new PrivatePinModel
-            {
-                Longitude = 24.467,
-                Latitude = 59.129,
-                LocationType = LocationType.Bench
-            };
-            await _privatePinXMLService.Add(testPin);
         }
         //Rakenduse sulgemine
         protected override void OnDisappearing()
