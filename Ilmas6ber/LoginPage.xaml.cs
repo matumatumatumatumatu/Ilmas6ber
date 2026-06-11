@@ -119,8 +119,36 @@ public partial class LoginPage : ContentPage
 
     private async Task HandleLogin(string email, string password)
     {
-        ShowError("Login is under development. Please use the Sign Up tab to create an account.");
-        await Task.CompletedTask;
+        SetLoading(true);
+
+        try
+        {
+            var user = await _authService.LoginAsync(email, password);
+
+            if (user == null)
+            {
+                ShowError("Invalid email or password.");
+                return;
+            }
+
+            // Save the session — respects "Remember Me" checkbox
+            _authService.SaveSession(user.Id, RememberMeCheckBox.IsChecked);
+
+            // Navigate to MainPage
+            await Shell.Current.GoToAsync("//MainPage");
+        }
+        catch (MySqlException ex)
+        {
+            ShowError($"Database Error ({ex.Number}): {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"An error occurred: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
     }
 
     private async Task HandleSignUp(string email, string password)
