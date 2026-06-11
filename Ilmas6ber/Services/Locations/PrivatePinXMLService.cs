@@ -94,12 +94,19 @@ namespace Ilmas6ber.Services.Locations
 
         public async Task Add(PrivatePinModel pin)
         {
-            pin.Elevation = await _elevationService.GetElevation(pin.Latitude, pin.Longitude);
-            pin.CreatedAt = DateTime.UtcNow;
-            pin.ModifiedAt = DateTime.UtcNow;
-            var list = Load();
-            list.Add(pin);
-            Save(list);
+            try
+            {
+                pin.Elevation = await _elevationService.GetElevation(pin.Latitude, pin.Longitude);
+                pin.CreatedAt = DateTime.UtcNow;
+                pin.ModifiedAt = DateTime.UtcNow;
+                var list = Load();
+                list.Add(pin);
+                Save(list);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] {ex.Message}");
+            }
         }
 
         public void Delete(Guid id)

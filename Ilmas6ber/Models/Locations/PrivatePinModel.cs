@@ -9,7 +9,7 @@ namespace Ilmas6ber.Models.Locations
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string? Title { get; set; }
-        public LocationType? LocationType { get; set; }
+        public LocationType LocationType { get; set; }
         public string? Description { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }

@@ -256,7 +256,8 @@ namespace Ilmas6ber
             var pin = new PrivatePinModel
             {
                 Longitude = lon,
-                Latitude = lat
+                Latitude = lat,
+                LocationType = LocationType.Bench
             };
 
             await _privatePinXMLService.Add(pin);
