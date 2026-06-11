@@ -119,36 +119,8 @@ public partial class LoginPage : ContentPage
 
     private async Task HandleLogin(string email, string password)
     {
-        SetLoading(true);
-
-        try
-        {
-            var user = await _authService.LoginAsync(email, password);
-
-            if (user == null)
-            {
-                ShowError("Invalid email or password.");
-                return;
-            }
-
-            // Save the session — respects "Remember Me" checkbox
-            _authService.SaveSession(user.Id, RememberMeCheckBox.IsChecked);
-
-            // Navigate to MainPage
-            await Shell.Current.GoToAsync("//MainPage");
-        }
-        catch (MySqlException)
-        {
-            ShowError("Could not connect to server. Check your internet connection.");
-        }
-        catch (Exception ex)
-        {
-            ShowError($"An error occurred: {ex.Message}");
-        }
-        finally
-        {
-            SetLoading(false);
-        }
+        ShowError("Login is under development. Please use the Sign Up tab to create an account.");
+        await Task.CompletedTask;
     }
 
     private async Task HandleSignUp(string email, string password)
@@ -185,9 +157,9 @@ public partial class LoginPage : ContentPage
             // MySQL error 1062 = duplicate entry (email already exists)
             ShowError("An account with this email already exists.");
         }
-        catch (MySqlException)
+        catch (MySqlException ex)
         {
-            ShowError("Could not connect to server. Check your internet connection.");
+            ShowError($"Database Error ({ex.Number}): {ex.Message}");
         }
         catch (Exception ex)
         {
