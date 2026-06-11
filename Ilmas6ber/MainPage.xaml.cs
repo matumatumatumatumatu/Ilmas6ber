@@ -1,8 +1,9 @@
-﻿
+
 using BruTile.Predefined;
 using BruTile.Web;
 using Ilmas6ber.Domain;
 using Ilmas6ber.Models.Locations;
+using Ilmas6ber.Services.Auth;
 using Ilmas6ber.Services.Cache;
 using Ilmas6ber.Services.Locations;
 using Mapsui;
@@ -33,6 +34,7 @@ namespace Ilmas6ber
         private readonly SatelliteMapCacheService _satelliteMapCacheService = new();
         private readonly MapCacheService _mapCacheService = new();
         private readonly PrivatePinXMLService _privatePinXMLService;
+        private readonly AuthService _authService;
         private bool _isSatellite = false;
         private MemoryLayer _locationLayer;
         private MemoryLayer _privatePinlayer;
@@ -51,9 +53,10 @@ namespace Ilmas6ber
         private HashSet<LocationType> _selectedLocationTypes = new(Enum.GetValues(typeof(LocationType)).Cast<LocationType>());
 
 
-        public MainPage(PrivatePinXMLService privatePinXMLService)
+        public MainPage(PrivatePinXMLService privatePinXMLService, AuthService authService)
         {
             _privatePinXMLService = privatePinXMLService;
+            _authService = authService;
             InitializeComponent();
 
 
@@ -312,7 +315,8 @@ namespace Ilmas6ber
             {
                 Window.Activated += OnWindowActivated;
             }
-            ApplicationUser player = new ApplicationUser();
+            // Load the current user from the database (linked to their account)
+            ApplicationUser player = await _authService.GetCurrentUserAsync() ?? new ApplicationUser();
             xpToLevel(player);
             await StartLocationListening();
             await _privatePinXMLService.BackfillElevationsAsync();
