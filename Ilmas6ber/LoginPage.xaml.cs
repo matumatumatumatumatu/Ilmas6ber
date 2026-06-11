@@ -157,9 +157,9 @@ public partial class LoginPage : ContentPage
             // MySQL error 1062 = duplicate entry (email already exists)
             ShowError("An account with this email already exists.");
         }
-        catch (MySqlException)
+        catch (MySqlException ex)
         {
-            ShowError("Could not connect to server. Check your internet connection.");
+            ShowError($"Database Error ({ex.Number}): {ex.Message}");
         }
         catch (Exception ex)
         {
