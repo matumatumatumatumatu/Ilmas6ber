@@ -17,6 +17,8 @@ namespace Ilmas6ber
                     await GoToAsync("//MainPage");
                 });
             }
+
+            Routing.RegisterRoute("ProfilePage", typeof(ProfilePage));
         }
     }
 }
