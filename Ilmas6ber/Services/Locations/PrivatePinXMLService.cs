@@ -69,44 +69,48 @@ namespace Ilmas6ber.Services.Locations
 
         public void Save(IEnumerable<PrivatePinModel> pins)
         {
-            var doc = new XDocument(
-                new XElement("PrivatePins",
-                    pins.Select(p =>
-                        new XElement("PrivatePin",
-                            new XAttribute("Id", p.Id),
-                            new XElement("Title", p.Title),
-                            new XElement("LocationType", p.LocationType),
-                            new XElement("Description", p.Description),
-                            new XElement("Longitude", p.Longitude),
-                            new XElement("Latitude", p.Latitude),
-                            new XElement("CreatedAt", p.CreatedAt.ToString("O")),
-                            new XElement("ModifiedAt", p.ModifiedAt.ToString("O")),
-                            new XElement("LastVisited", p.LastVisited?.ToString("O")),
-                            new XElement("ImagePath", p.ImagePath),
-                            new XElement("Elevation", p.Elevation?.ToString(CultureInfo.InvariantCulture) ?? "")
+            try
+            {
+                var doc = new XDocument(
+                    new XElement("PrivatePins",
+                        pins.Select(p =>
+                            new XElement("PrivatePin",
+                                new XAttribute("Id", p.Id),
+                                new XElement("Title", p.Title),
+                                new XElement("LocationType", p.LocationType),
+                                new XElement("Description", p.Description),
+                                new XElement("Longitude", p.Longitude),
+                                new XElement("Latitude", p.Latitude),
+                                new XElement("CreatedAt", p.CreatedAt.ToString("O")),
+                                new XElement("ModifiedAt", p.ModifiedAt.ToString("O")),
+                                new XElement("LastVisited", p.LastVisited?.ToString("O")),
+                                new XElement("ImagePath", p.ImagePath),
+                                new XElement("Elevation", p.Elevation?.ToString(CultureInfo.InvariantCulture) ?? "")
+                            )
                         )
                     )
-                )
-            );
+                );
 
-            doc.Save(_filePath);
+                doc.Save(_filePath);
+                Console.WriteLine($"[DEBUG] Saved to {_filePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Save failed: {ex.Message}");
+            }
         }
 
         public async Task Add(PrivatePinModel pin)
         {
-            try
-            {
+            
+            
                 pin.Elevation = await _elevationService.GetElevation(pin.Latitude, pin.Longitude);
                 pin.CreatedAt = DateTime.UtcNow;
                 pin.ModifiedAt = DateTime.UtcNow;
                 var list = Load();
                 list.Add(pin);
                 Save(list);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] {ex.Message}");
-            }
+            
         }
 
         public void Delete(Guid id)
