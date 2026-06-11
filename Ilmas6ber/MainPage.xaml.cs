@@ -224,11 +224,11 @@ namespace Ilmas6ber
             var worldPos = e.WorldPosition;
             var (lon, lat) = SphericalMercator.ToLonLat(worldPos.X, worldPos.Y);
 
-            MainThread.BeginInvokeOnMainThread(async () =>
+            string action = await MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 _coordinatesWidget.Text = $"Lat: {lat:F5}, Lon: {lon:F5}";
 
-                string action = await Application.Current.MainPage.DisplayActionSheet(
+                return await Application.Current.MainPage.DisplayActionSheet(
                     $"Lat: {lat:F5}, Lon: {lon:F5}",
                     "Cancel",
                     null,
@@ -236,20 +236,20 @@ namespace Ilmas6ber
                     "Open in navigation app",
                     "Copy coordinates"
                 );
-
-                switch (action)
-                {
-                    case "Add point":
-                        await AddPinPoint(lon, lat);
-                        break;
-                    case "Open in navigation app":
-                        await GetDirections(lon, lat);
-                        break;
-                    case "Copy coordinates":
-                        await CopyCoordinates(lon, lat);
-                        break;
-                }
             });
+
+            switch (action)
+            {
+                case "Add private point":
+                    await AddPinPoint(lon, lat);
+                    break;
+                case "Open in navigation app":
+                    await GetDirections(lon, lat);
+                    break;
+                case "Copy coordinates":
+                    await CopyCoordinates(lon, lat);
+                    break;
+            }
         }
         private async Task AddPinPoint(double lon, double lat)
         {
@@ -316,20 +316,26 @@ namespace Ilmas6ber
                 neCorner.x, neCorner.y
             );
 
-            
             mapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(1, 2250);
 
             if (Window != null)
             {
                 Window.Activated += OnWindowActivated;
             }
-            // Load the current user from the database (linked to their account)
+
             ApplicationUser player = await _authService.GetCurrentUserAsync() ?? new ApplicationUser();
             xpToLevel(player);
             await StartLocationListening();
             await _privatePinXMLService.BackfillElevationsAsync();
-            Console.WriteLine($"Player XP: {player.xpPoints}");
-            Console.WriteLine($"Player Level: {player.xpLevel}");
+
+            // TEMP TEST - remove after confirming
+            var testPin = new PrivatePinModel
+            {
+                Longitude = 24.467,
+                Latitude = 59.129,
+                LocationType = LocationType.Bench
+            };
+            await _privatePinXMLService.Add(testPin);
         }
         //Rakenduse sulgemine
         protected override void OnDisappearing()
