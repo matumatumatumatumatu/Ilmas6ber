@@ -1,4 +1,3 @@
-
 using BruTile.Predefined;
 using BruTile.Web;
 using Ilmas6ber.Domain;
@@ -44,7 +43,7 @@ namespace Ilmas6ber
         private ImageStyle _privatePinStyle;
         private ILayer? basicLayer;
         private ILayer? satelliteLayer;
-       public MapControl mapControl = new Mapsui.UI.Maui.MapControl();
+        public MapControl mapControl = new Mapsui.UI.Maui.MapControl();
         private TextBoxWidget _coordinatesWidget;
         private bool _isCheckingLocation = false;
         private Location _lastLocation;
@@ -60,13 +59,11 @@ namespace Ilmas6ber
             _authService = authService;
             InitializeComponent();
 
-
             //layer
             mapControl.Map.Layers.Add(_mapCacheService.CachedTileLayer);
             basicLayer = _mapCacheService.CachedTileLayer;
 
             //satellite map source
-
             mapControl.Map.Layers.Add(_satelliteMapCacheService.CachedTileLayer);
             satelliteLayer = _satelliteMapCacheService.CachedTileLayer;
             satelliteLayer.Enabled = false;
@@ -92,7 +89,7 @@ namespace Ilmas6ber
             _allPrivatePins = _privatePinXMLService.Load();
             _privatePinlayer = new MemoryLayer
             {
-                Name="PrivatePin",
+                Name = "PrivatePin",
                 Features = _allPrivatePins.Select(p =>
                 {
                     var (x, y) = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
@@ -123,7 +120,7 @@ namespace Ilmas6ber
                 HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Center,
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Top
             });
-            
+
             //Coordinates test textbox
             _coordinatesWidget = new TextBoxWidget
             {
@@ -136,19 +133,17 @@ namespace Ilmas6ber
             };
             mapControl.Map?.Widgets.Add(_coordinatesWidget);
             //Coordinates test textbox
-            
+
             MapGrid.Insert(0, mapControl);
 
-            
             var tapGesture = new TapGestureRecognizer();
             tapGesture.Tapped += (s, e) => CollapseZoomButtonsBottomRight();
             mapControl.GestureRecognizers.Add(tapGesture);
-            mapControl.MapTapped += ViewOptions;
+            mapControl.MapTapped += OnMapTapped; // CHANGED: was ViewOptions
 
             Connectivity.ConnectivityChanged += OnConnectivityChanged;
-
-
         }
+
         //Asukoha meetodid BEGIN
         public async Task StartLocationListening()
         {
@@ -188,7 +183,6 @@ namespace Ilmas6ber
             }
 
             _lastLocation = location;
-            
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -199,7 +193,7 @@ namespace Ilmas6ber
                 _locationLayer.Style = _pinStyle;
 
                 _locationLayer.DataHasChanged();
-                
+
                 mapControl.Refresh();
             });
         }
@@ -218,8 +212,46 @@ namespace Ilmas6ber
             _isCheckingLocation = false;
         }
         //Asukoha meetodid END
+
         //Klõpsamis funktsioonid BEGIN
-        private async void ViewOptions(object? sender, MapEventArgs e)
+        // OnMapTapped BEGIN
+        private async void OnMapTapped(object? sender, MapEventArgs e)
+        {
+            var tappedPin = _allPrivatePins
+                .Select(p =>
+                {
+                    var (x, y) = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
+                    var dist = Math.Sqrt(Math.Pow(x - e.WorldPosition.X, 2) + Math.Pow(y - e.WorldPosition.Y, 2));
+                    return (pin: p, dist);
+                })
+                .Where(p => p.dist < 5000)
+                .OrderBy(p => p.dist)
+                .FirstOrDefault();
+
+            if (tappedPin.pin != null)
+                await ShowPinInfo(tappedPin.pin);
+            else
+                await ViewOptions(sender, e);
+        }
+        // OnMapTapped END
+
+        // ShowPinInfo BEGIN
+        private async Task ShowPinInfo(PrivatePinModel pin)
+        {
+            var info = new System.Text.StringBuilder();
+            info.AppendLine($" {pin.LocationType.ToString().Replace("_", " ")}");
+            info.AppendLine($" {(string.IsNullOrEmpty(pin.Description) ? "No description" : pin.Description)}");
+            info.AppendLine($" Elevation: {(pin.Elevation.HasValue ? $"{pin.Elevation:F1}m" : "Unknown")}");
+            info.AppendLine($" Created: {pin.CreatedAt:dd/MM/yyyy}");
+            info.AppendLine($" Modified: {pin.ModifiedAt:dd/MM/yyyy}");
+            info.AppendLine($" Last Visited: {(pin.LastVisited.HasValue ? pin.LastVisited.Value.ToString("dd/MM/yyyy") : "Never")}");
+
+            await DisplayAlert(pin.Title, info.ToString(), "Close");
+        }
+        // ShowPinInfo END
+
+        // ViewOptions BEGIN
+        private async Task ViewOptions(object? sender, MapEventArgs e)
         {
             var worldPos = e.WorldPosition;
             var (lon, lat) = SphericalMercator.ToLonLat(worldPos.X, worldPos.Y);
@@ -251,6 +283,8 @@ namespace Ilmas6ber
                     break;
             }
         }
+        // ViewOptions END
+
         private async Task AddPinPoint(double lon, double lat)
         {
             string title = await DisplayPromptAsync("New Pin", "Enter a title:", placeholder: "My Pin");
@@ -286,17 +320,20 @@ namespace Ilmas6ber
             _privatePinlayer.DataHasChanged();
             mapControl.Refresh();
         }
+
         private async Task GetDirections(double lon, double lat)
         {
             var location = new Location(lat, lon);
             var options = new MapLaunchOptions { Name = "Selected Location" };
             await Microsoft.Maui.ApplicationModel.Map.OpenAsync(location, options);
         }
+
         private async Task CopyCoordinates(double lon, double lat)
         {
             await Clipboard.SetTextAsync($"{lat:F5}, {lon:F5}");
         }
         //Klõpsamis funktsioonid END
+
         //Kaardi layerid BEGIN
         private void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
         {
@@ -351,8 +388,8 @@ namespace Ilmas6ber
             xpToLevel(player);
             await StartLocationListening();
             await _privatePinXMLService.BackfillElevationsAsync();
-
         }
+
         //Rakenduse sulgemine
         protected override void OnDisappearing()
         {
@@ -365,10 +402,8 @@ namespace Ilmas6ber
             }
         }
 
-
         private void OnZoomButtonClickedBottomRight(object sender, EventArgs e)
         {
-            
             if (!_areZoomButtonsExpanded)
             {
                 ExpandZoomButtonsBottomRight();
@@ -391,7 +426,6 @@ namespace Ilmas6ber
 
         private void OnOverlayTappedBottomRight(object sender, TappedEventArgs e)
         {
-            
             if (_areZoomButtonsExpanded)
             {
                 CollapseZoomButtonsBottomRight();
@@ -404,7 +438,6 @@ namespace Ilmas6ber
             ZoomInButtonBottomRight.IsEnabled = true;
             ZoomOutButtonBottomRight.IsEnabled = true;
 
-            
             await Task.WhenAll(
                 ZoomInButtonBottomRight.FadeTo(1, 200, Easing.CubicOut),
                 ZoomOutButtonBottomRight.FadeTo(1, 200, Easing.CubicOut)
@@ -415,7 +448,6 @@ namespace Ilmas6ber
         {
             _areZoomButtonsExpanded = false;
 
-            
             await Task.WhenAll(
                 ZoomInButtonBottomRight.FadeTo(0, 200, Easing.CubicIn),
                 ZoomOutButtonBottomRight.FadeTo(0, 200, Easing.CubicIn)
@@ -493,19 +525,16 @@ namespace Ilmas6ber
                 ? 4 * progress * progress * progress
                 : 1 - Math.Pow(-2 * progress + 2, 3) / 2;
         }
+
         private async Task<bool> EnsureLocationPermission()
         {
             var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
 
-            // 1. If already granted, proceed
             if (status == PermissionStatus.Granted)
             {
-                
                 return true;
             }
 
-            // 2. If denied previously, the system prompt will not show up again.
-            // We must explain the issue and send them to the device settings page.
             if (status == PermissionStatus.Denied)
             {
                 bool openSettings = await DisplayAlert(
@@ -517,23 +546,20 @@ namespace Ilmas6ber
                 if (openSettings)
                 {
                     AppInfo.Current.ShowSettingsUI();
-                    
                 }
                 return false;
             }
 
             status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             return status == PermissionStatus.Granted;
-
         }
+
         private async void OnWindowActivated(object sender, EventArgs e)
         {
-            // Explicitly check permissions silently without re-triggering endless prompt loops
             var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
 
             if (status == PermissionStatus.Granted)
             {
-                // The user just granted permission in settings and came back
                 await FetchDeviceLocation();
             }
         }
@@ -556,10 +582,10 @@ namespace Ilmas6ber
                 // Handle exceptions like GPS hardware being turned off
             }
         }
+
         //dropdown buttons begin
         private async void DropdownClicked(object sender, EventArgs e)
         {
-
             if (_toggled == false)
             {
                 DropdownButton_Profile.IsVisible = true;
@@ -576,9 +602,8 @@ namespace Ilmas6ber
                 DropdownButton_Private.IsEnabled = false;
                 _toggled = false;
             }
-
-
         }
+
         public async void DropDownProfileClicked(object sender, EventArgs e)
         {
             await Shell.Current.GoToAsync("ProfilePage");
@@ -644,7 +669,6 @@ namespace Ilmas6ber
                 return;
             }
 
-            // Toggle the selected type
             var selectedIndex = actions.IndexOf(action);
             if (selectedIndex >= 0 && selectedIndex < locationTypes.Count)
             {
@@ -658,7 +682,6 @@ namespace Ilmas6ber
                     _selectedLocationTypes.Add(selectedType);
                 }
 
-                // Show the menu again to allow multiple selections
                 await ShowFilterMenu();
             }
         }
@@ -707,9 +730,8 @@ namespace Ilmas6ber
             }
             else
             {
-                player.xpLevel = 6; // For 1000+ XP
+                player.xpLevel = 6;
             }
         }
-
-     }
+    }
 }
