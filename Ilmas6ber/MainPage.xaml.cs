@@ -34,6 +34,7 @@ namespace Ilmas6ber
         private readonly MapCacheService _mapCacheService = new();
         private readonly PrivatePinXMLService _privatePinXMLService;
         private bool _isSatellite = false;
+        public bool _toggled = false;
         private MemoryLayer _locationLayer;
         private MemoryLayer _privatePinlayer;
         private PointFeature _locationFeature;
@@ -523,7 +524,8 @@ namespace Ilmas6ber
             }
         }
 
-        public async Task<List<string>> GetDataAsync()
+
+        public async Task<List<string>> GetDataAsync(object sender, EventArgs e)
         {
             var results = new List<string>();
 
