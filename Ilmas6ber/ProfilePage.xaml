@@ -2,11 +2,137 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Ilmas6ber.ProfilePage"
-             Title="ProfilePage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="Profile"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView BackgroundColor="#F3F4F6">
+        <VerticalStackLayout Padding="24" Spacing="24">
+            
+            <!-- Custom Header with Back Button -->
+            <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+                <Button Grid.Column="0"
+                        Text="← Back"
+                        BackgroundColor="Transparent"
+                        TextColor="#4F46E5"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        Clicked="OnBackClicked"/>
+                
+                <Label Grid.Column="1"
+                       Text="My Profile"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="#1F2937"/>
+                
+                <!-- Spacer to balance grid -->
+                <BoxView Grid.Column="2" WidthRequest="60" Color="Transparent"/>
+            </Grid>
+
+            <!-- Profile Info Card -->
+            <Frame CornerRadius="16" 
+                   BackgroundColor="White" 
+                   BorderColor="#E5E7EB"
+                   Padding="24"
+                   HasShadow="False">
+                <VerticalStackLayout Spacing="16" HorizontalOptions="Center">
+                    
+                    <!-- Avatar circle placeholder -->
+                    <Frame HeightRequest="100"
+                           WidthRequest="100"
+                           CornerRadius="50"
+                           BackgroundColor="#EEF2F6"
+                           HorizontalOptions="Center"
+                           BorderColor="#4F46E5"
+                           Padding="0">
+                        <Label Text="👤" 
+                               FontSize="48" 
+                               HorizontalOptions="Center" 
+                               VerticalOptions="Center"/>
+                    </Frame>
+
+                    <!-- User Name & Email -->
+                    <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <Label x:Name="DisplayNameLabel"
+                               Text="User Name"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               TextColor="#1F2937"/>
+                        
+                        <Label x:Name="EmailLabel"
+                               Text="email@example.com"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               TextColor="#6B7280"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Statistics Section -->
+            <Label Text="STATISTICS" 
+                   FontSize="12" 
+                   FontAttributes="Bold" 
+                   TextColor="#6B7280"
+                   Margin="4,0,0,0"/>
+
+            <!-- Grid of stats -->
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="12" ColumnSpacing="12">
+                
+                <!-- Level Card -->
+                <Frame Grid.Row="0" Grid.Column="0"
+                       CornerRadius="12" 
+                       BackgroundColor="White"
+                       BorderColor="#E5E7EB"
+                       Padding="16"
+                       HasShadow="False">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Level" FontSize="12" TextColor="#6B7280"/>
+                        <Label x:Name="XpLevelLabel" Text="Level 1" FontSize="18" FontAttributes="Bold" TextColor="#1F2937"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- XP Points Card -->
+                <Frame Grid.Row="0" Grid.Column="1"
+                       CornerRadius="12" 
+                       BackgroundColor="White"
+                       BorderColor="#E5E7EB"
+                       Padding="16"
+                       HasShadow="False">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Total XP" FontSize="12" TextColor="#6B7280"/>
+                        <Label x:Name="XpPointsLabel" Text="0 XP" FontSize="18" FontAttributes="Bold" TextColor="#1F2937"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Team Card -->
+                <Frame Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                       CornerRadius="12" 
+                       BackgroundColor="White"
+                       BorderColor="#E5E7EB"
+                       Padding="16"
+                       HasShadow="False">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="4">
+                            <Label Text="Current Team" FontSize="12" TextColor="#6B7280"/>
+                            <Label x:Name="TeamColorLabel" Text="No Team Selected" FontSize="18" FontAttributes="Bold" TextColor="#1F2937"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="🚩" FontSize="24" VerticalOptions="Center"/>
+                    </Grid>
+                </Frame>
+            </Grid>
+
+            <!-- Danger Zone / Logout -->
+            <Button Text="Log Out"
+                    BackgroundColor="#EF4444"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    CornerRadius="12"
+                    Clicked="OnLogoutClicked"
+                    Margin="0,20,0,0"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
