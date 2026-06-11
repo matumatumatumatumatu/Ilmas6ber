@@ -523,7 +523,39 @@ namespace Ilmas6ber
                 // Handle exceptions like GPS hardware being turned off
             }
         }
+        //dropdown buttons begin
+        private async void DropdownClicked(object sender, EventArgs e)
+        {
 
+            if (_toggled == false)
+            {
+                DropdownButton_Profile.IsVisible = true;
+                DropdownButton_Profile.IsEnabled = true;
+                DropdownButton_Private.IsVisible = true;
+                DropdownButton_Private.IsEnabled = true;
+                _toggled = true;
+            }
+            else if (_toggled == true)
+            {
+                DropdownButton_Profile.IsVisible = false;
+                DropdownButton_Profile.IsEnabled = false;
+                DropdownButton_Private.IsVisible = false;
+                DropdownButton_Private.IsEnabled = false;
+                _toggled = false;
+            }
+
+
+        }
+        public async void DropDownProfileClicked(object sender, EventArgs e)
+        {
+            //Card #25
+        }
+
+        public async void DropDownPrivateClicked(object sender, EventArgs e)
+        {
+            /////////////
+        }
+        //dropdown buttons end
 
         public async Task<List<string>> GetDataAsync(object sender, EventArgs e)
         {
