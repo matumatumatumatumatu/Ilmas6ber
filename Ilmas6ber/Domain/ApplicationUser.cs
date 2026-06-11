@@ -15,4 +15,5 @@ namespace Ilmas6ber.Domain
         public double xpPoints { get; set; }
         public int xpLevel { get; set; }
     }
+    //sslmode requried lets go
 }
