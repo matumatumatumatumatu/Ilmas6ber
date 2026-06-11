@@ -239,12 +239,12 @@ namespace Ilmas6ber
         private async Task ShowPinInfo(PrivatePinModel pin)
         {
             var info = new System.Text.StringBuilder();
-            info.AppendLine($" {pin.LocationType.ToString().Replace("_", " ")}");
-            info.AppendLine($" {(string.IsNullOrEmpty(pin.Description) ? "No description" : pin.Description)}");
-            info.AppendLine($" Elevation: {(pin.Elevation.HasValue ? $"{pin.Elevation:F1}m" : "Unknown")}");
-            info.AppendLine($" Created: {pin.CreatedAt:dd/MM/yyyy}");
-            info.AppendLine($" Modified: {pin.ModifiedAt:dd/MM/yyyy}");
-            info.AppendLine($" Last Visited: {(pin.LastVisited.HasValue ? pin.LastVisited.Value.ToString("dd/MM/yyyy") : "Never")}");
+            info.AppendLine($"📍 {pin.LocationType.ToString().Replace("_", " ")}");
+            info.AppendLine($"📝 {(string.IsNullOrEmpty(pin.Description) ? "No description" : pin.Description)}");
+            info.AppendLine($"🏔️ Elevation: {(pin.Elevation.HasValue ? $"{pin.Elevation:F1}m" : "Unknown")}");
+            info.AppendLine($"📅 Created: {pin.CreatedAt:dd/MM/yyyy}");
+            info.AppendLine($"✏️ Modified: {pin.ModifiedAt:dd/MM/yyyy}");
+            info.AppendLine($"👣 Last Visited: {(pin.LastVisited.HasValue ? pin.LastVisited.Value.ToString("dd/MM/yyyy") : "Never")}");
 
             await DisplayAlert(pin.Title, info.ToString(), "Close");
         }
