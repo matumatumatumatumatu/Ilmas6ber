@@ -232,16 +232,16 @@ namespace Ilmas6ber
                     $"Lat: {lat:F5}, Lon: {lon:F5}",
                     "Cancel",
                     null,
-                    //"Add point",
+                    "Add private point",
                     "Open in navigation app",
                     "Copy coordinates"
                 );
 
                 switch (action)
                 {
-                    //case "Add point":
-                    //    AddPinPoint(lon, lat);
-                     //   break;
+                    case "Add point":
+                        AddPinPoint(lon, lat);
+                        break;
                     case "Open in navigation app":
                         await GetDirections(lon, lat);
                         break;
@@ -253,7 +253,7 @@ namespace Ilmas6ber
         }
         private async Task AddPinPoint(double lon, double lat)
         {
-
+            
         }
         private async Task GetDirections(double lon, double lat)
         {
