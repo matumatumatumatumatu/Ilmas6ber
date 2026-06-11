@@ -1,4 +1,5 @@
-﻿using Ilmas6ber.Services.Locations;
+using Ilmas6ber.Services.Auth;
+using Ilmas6ber.Services.Locations;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 
@@ -17,7 +18,14 @@ namespace Ilmas6ber
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
+
+            // Services
+            builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<PrivatePinXMLService>();
+
+            // Pages
+            builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<MainPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();
