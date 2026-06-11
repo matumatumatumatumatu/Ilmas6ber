@@ -240,7 +240,7 @@ namespace Ilmas6ber
                 switch (action)
                 {
                     case "Add point":
-                        AddPinPoint(lon, lat);
+                        await AddPinPoint(lon, lat);
                         break;
                     case "Open in navigation app":
                         await GetDirections(lon, lat);
@@ -253,7 +253,13 @@ namespace Ilmas6ber
         }
         private async Task AddPinPoint(double lon, double lat)
         {
-            
+            var pin = new PrivatePinModel
+            {
+                Longitude = lon,
+                Latitude = lat
+            };
+
+            await _privatePinXMLService.Add(pin);
         }
         private async Task GetDirections(double lon, double lat)
         {
